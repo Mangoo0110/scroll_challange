@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scroll_challenge/src/core/packages/async_handler/lib/async_handler.dart';
+import 'package:scroll_challenge/src/core/shared/reactive_notifier/process_notifier.dart';
+import 'package:scroll_challenge/src/core/utils/utils.dart';
 import '../model/cart/cart.dart';
 import '../model/cart_item/cart_item.dart';
 import '../repo/cart_repo.dart';
@@ -12,14 +14,21 @@ class CartStore {
   /// Current cart state for UI binding.
   final ValueNotifier<Cart> cart = ValueNotifier<Cart>(const Cart());
 
+  final ProcessStatusNotifier processStatusNotifier = ProcessStatusNotifier();
+
   /// Load cart into memory for the active user/cart id.
   /// 
   /// OFFLINE FEATURE
   Future<void> load({String? userId, String cartId = 'default'}) async {
-    final res = await repo.getCart(GetCartParam(userId: userId, cartId: cartId));
-    if (res is SuccessResponse<Cart> && res.data != null) {
-      cart.value = res.data!;
-    }
+    await handleFutureRequest(
+      futureRequest: () async =>
+          await repo.getCart(GetCartParam(userId: userId, cartId: cartId)),
+      processStatusNotifier: processStatusNotifier,
+      onSuccess: (data) {
+        cart.value = data;
+      },
+    );
+
   }
 
   /// Returns quantity for a variant from the in-memory cart.

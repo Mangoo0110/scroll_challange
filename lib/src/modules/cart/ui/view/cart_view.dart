@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:scroll_challenge/src/core/packages/async_handler/lib/async_handler.dart';
+import 'package:scroll_challenge/src/core/di/repo_di.dart';
 import '../../../../core/shared/reactive_notifier/process_notifier.dart';
-import '../../../../core/shared/reactive_notifier/snackbar_notifier.dart';
 import '../../../../core/themes/app_colors.dart';
-import '../../../../core/utils/helpers/handle_future_request.dart';
+import '../../controller/cart_store.dart';
 import '../../model/cart/cart.dart';
 import '../../model/cart_item/cart_item.dart';
 import '../../repo/cart_repo.dart';
@@ -25,46 +24,24 @@ class _CartViewState extends State<CartView> {
     remoteService: RemoteCartService(),
   );
   final ValueNotifier<Cart> _cart = ValueNotifier<Cart>(const Cart());
-  final ProcessStatusNotifier _status =
-      ProcessStatusNotifier(initialStatus: ProcessLoading(message: 'Loading'));
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadCart());
+    _loadCart();
   }
 
-  AsyncRequest<Cart> _fetchCart() => _repo.getCart(
-        const GetCartParam(userId: null),
-      );
-
-  Future<void> _loadCart() async {
-    final snackbarNotifier = SnackbarNotifier(context: context);
-    final res = await handleFutureRequest<Cart>(
-      futureRequest: _fetchCart,
-      processStatusNotifier: _status,
-      errorSnackbarNotifier: snackbarNotifier,
-      onSuccess: (data) => _cart.value = data,
-    );
-    if (res == null) {
-      _status.setError(message: 'Failed');
-    }
+  _loadCart() {
+    serviceLocator<CartStore>().load();
   }
+
 
   Future<void> _updateQuantity(CartItem item, int quantity) async {
-    final res = await _repo.updateQuantity(
-      cartItemId: item.cartItemId,
-      quantity: quantity,
-    );
-    if (res is SuccessResponse<Cart> && res.data != null) {
-      _cart.value = res.data!;
-    }
+    serviceLocator<CartStore>().setQuantity(cartItemId: item.cartItemId, quantity: quantity);
   }
 
   @override
   void dispose() {
-    _cart.dispose();
-    _status.dispose();
     super.dispose();
   }
 
@@ -77,12 +54,13 @@ class _CartViewState extends State<CartView> {
         centerTitle: true,
       ),
       body: ListenableBuilder(
-        listenable: _status,
+        listenable: serviceLocator<CartStore>().processStatusNotifier,
         builder: (context, _) {
-          if (_status.status is ProcessLoading) {
+          final status = serviceLocator<CartStore>().processStatusNotifier;
+          if (status.status is ProcessLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (_status.status is ProcessFailed) {
+          if (status.status is ProcessFailed) {
             return Center(
               child: TextButton(
                 onPressed: _loadCart,
@@ -91,7 +69,7 @@ class _CartViewState extends State<CartView> {
             );
           }
           return ValueListenableBuilder<Cart>(
-            valueListenable: _cart,
+            valueListenable: serviceLocator<CartStore>().cart,
             builder: (context, cart, _) {
               if (cart.items.isEmpty) {
                 return const Center(child: Text('Your cart is empty'));

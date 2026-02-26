@@ -29,6 +29,7 @@ class CartQuantityBox extends StatefulWidget {
 class _CartQuantityBoxState extends State<CartQuantityBox> {
   bool _showEditor = false;
   Timer? _hideTimer;
+  int _currentQuantity = 0;
 
   void _showEditorTemporarily() {
     if (!_showEditor) {
@@ -47,24 +48,44 @@ class _CartQuantityBoxState extends State<CartQuantityBox> {
     _showEditorTemporarily();
   }
 
+  _updateUi(){
+    // If quantity has not changed; No need to update ui
+    if (_currentQuantity == serviceLocator<CartStore>().quantityForVariant(
+          widget.initialCartImage.cartItemId,
+    )){
+      return;
+    }
+      
+    setState(() {
+      
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    serviceLocator<CartStore>().cart.addListener(_updateUi);
+  }
+
   @override
   void dispose() {
     _hideTimer?.cancel();
     super.dispose();
+    serviceLocator<CartStore>().cart.removeListener(_updateUi);
   }
 
   @override
   Widget build(BuildContext context) {
     final cartStore = serviceLocator<CartStore>();
-    return ValueListenableBuilder<Cart>(
-      valueListenable: cartStore.cart,
-      builder: (context, cart, _) {
+    return Builder(
+      builder: (context) {
         final quantity = cartStore.quantityForVariant(widget.initialCartImage.cartItemId);
         final accentColor = AppColors.context(context).primaryColor;
         return LayoutBuilder(
           builder: (context, constraints) {
             
-            final double height = 45;
+            final double height = constraints.maxHeight;
             final double width = _showEditor ? widget.maxWidth : height;
 
             final double iconSize = 22;
