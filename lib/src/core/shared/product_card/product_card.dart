@@ -22,9 +22,18 @@ class ProductCard extends StatelessWidget {
                     right: 10,
                     top: imageRect.top + (imageRect.height * 0.55),
                     child: SizedBox(
-                      height: min(imageRect.height * 0.45, 50),
+                      height: min(imageRect.height * 0.45, 45),
                       child: CartQuantityBox(
-                        initialCartImage: CartItem(productId: product.id, cartItemId: product.variants.first.id, name: product.name, price: product.variants.first.price, quantity: 0, salePrice: product.variants.first.salePrice),
+                        initialCartImage: CartItem(
+                          productId: product.id,
+                           cartItemId: product.variants.first.id,
+                           name: product.name,
+                           price: product.variants.first.price,
+                           quantity: 0,
+                           salePrice: product.variants.first.salePrice,
+                           imageUrl: product.variants.isNotEmpty ? product.variants.first.imageUrl : null,
+                           unitLabel: (product.variants.isNotEmpty && product.variants.first.attributes.isNotEmpty) ? product.variants.first.attributes.first.value : null
+                        ),
                         maxWidth: min(120, width - 16),
                         iconSize: 20,
                       ),

@@ -1,24 +1,18 @@
-
 import 'package:flutter/material.dart';
-import 'package:scroll_challenge/src/core/packages/pagination_pkg/lib/src/pagination_controller.dart';
+import 'package:pagination_pkg/pagination_pkg.dart';
 import 'package:scroll_challenge/src/core/shared/widget/paginated_grid.dart';
 import '../widgets/product_grid_tile.dart';
 import '../../model/product/product.dart';
 
 class ProductGridView extends StatefulWidget {
-  
-  final SinglePagePaginationController<Product> productPaginationController;
-  const ProductGridView({
-    super.key,
-    required this.productPaginationController,
-  });
+  final InfinityScrollPaginationController<Product> productPaginationController;
+  const ProductGridView({super.key, required this.productPaginationController});
 
   @override
   State<ProductGridView> createState() => _ProductGridViewState();
 }
 
 class _ProductGridViewState extends State<ProductGridView> {
-
   @override
   void initState() {
     super.initState();
@@ -54,7 +48,6 @@ class _ProductGridViewState extends State<ProductGridView> {
           child: ProductGridTile(product: product),
         );
       },
-      
     );
   }
 }

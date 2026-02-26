@@ -1,10 +1,7 @@
-
-import 'package:scroll_challenge/src/core/packages/pagination_pkg/lib/pagination_pkg.dart';
+import 'package:pagination_pkg/pagination_pkg.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:scroll_challenge/src/core/utils/utils.dart';
-
-
 
 class PaginatedGridView<T> extends StatefulWidget {
   final PaginationEngine<T> pagination;
@@ -53,24 +50,23 @@ class PaginatedGridView<T> extends StatefulWidget {
 }
 
 class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
-
   static const double _loadMoreThreshold = 200.0;
   final ScrollController scrollController = ScrollController();
 
-  void _maybeLoadMore() {
-    if (!scrollController.hasClients) return;
-    final position = scrollController.position;
-    if (position.extentAfter <= _loadMoreThreshold) {
-      widget.pagination.loadNextPage();
-    }
-  }
+  // void _maybeLoadMore() {
+  //   if (!scrollController.hasClients) return;
+  //   final position = scrollController.position;
+  //   if (position.extentAfter <= _loadMoreThreshold) {
+  //     widget.pagination.loadNextPage();
+  //   }
+  // }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    scrollController.addListener(_maybeLoadMore);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeLoadMore());
+    // scrollController.addListener(_maybeLoadMore);
+    // WidgetsBinding.instance.addPostFrameCallback((_) => _maybeLoadMore());
   }
 
   @override
@@ -82,36 +78,49 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: ListenableBuilder(
-        listenable: widget.pagination,
+    return ListenableBuilder(
+      listenable: widget.pagination,
       builder: (context, _) {
         final state = widget.pagination.state.value;
         debugPrint("State: $state");
-        WidgetsBinding.instance.addPostFrameCallback((_) => _maybeLoadMore());
-          
-          if (state == PaginationLoadState.nopages) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Center(child: Text(widget.emptyMessage)),
-                IconButton(
-                  onPressed: widget.pagination.refresh,
-                  icon: const Icon(Icons.refresh),
-                ),
-              ],
-            ).animate().fadeIn(duration: 300.ms);
-          }
-      
-          
-          final itemCount = widget.pagination.totalItemsCount;
-          debugPrint("Total items: ${widget.pagination.totalItemsCount}");
-          return CustomScrollView(
-            controller: scrollController,
+    
+        if (state == PaginationLoadState.nopages) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Center(child: Text(widget.emptyMessage)),
+              IconButton(
+                onPressed: widget.pagination.refresh,
+                icon: const Icon(Icons.refresh),
+              ),
+            ],
+          ).animate().fadeIn(duration: 300.ms);
+        }
+    
+        final itemCount = widget.pagination.totalItemsCount;
+        debugPrint("Total items: ${widget.pagination.totalItemsCount}");
+        return NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification.metrics.axis != Axis.vertical) return false;
+
+            final state = widget.pagination.state.value;
+            final canLoad =
+                state != PaginationLoadState.loading &&
+                state != PaginationLoadState.refreshing &&
+                state != PaginationLoadState.allLoaded &&
+                state != PaginationLoadState.nopages;
+
+            if (canLoad && notification.metrics.extentAfter < 250) {
+              widget.pagination.loadNextPage();
+            }
+            return false;
+          },
+          child: CustomScrollView(
+            primary: true,
+            //controller: scrollController,
             physics: widget.physics,
             slivers: [
               SliverGrid.builder(
-                
                 // padding: widget.padding,
                 // shrinkWrap: widget.shrinkWrap,
                 // physics: widget.disableScroll
@@ -120,7 +129,8 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
                 gridDelegate: widget.gridDelegate,
                 itemCount: itemCount,
                 itemBuilder: (context, index) {
-                  final isFooter = index == widget.pagination.totalItemsCount - 1;
+                  final isFooter =
+                      index == widget.pagination.totalItemsCount - 1;
               
                   // Footer: Loading/Refreshing => show skeleton tiles
                   // if (isFooter &&
@@ -133,12 +143,11 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
                   // }
               
                   // Footer: All loaded => show "End"
-                  
               
                   // Normal grid item
                   if (!isFooter) {
                     final element = widget.pagination.itemAt(index);
-                    if(element == null) {
+                    if (element == null) {
                       return const SizedBox.shrink();
                     }
                     return widget
@@ -150,14 +159,11 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
                           duration: 300.ms,
                           curve: Curves.easeOutCubic,
                         )
-                        .fadeIn(
-                          duration: 300.ms,
-                          curve: Curves.easeOutCubic,
-                        );
+                        .fadeIn(duration: 300.ms, curve: Curves.easeOutCubic);
                   }
               
                   // Footer: default empty space (when not loading / not allLoaded)
-                  return Container( child: const SizedBox.shrink());
+                  return Container(child: const SizedBox.shrink());
                 },
               ),
               SliverToBoxAdapter(
@@ -167,7 +173,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
                   child: Align(
                     alignment: Alignment.topCenter,
                     child: ValueListenableBuilder(
-                      valueListenable: widget.pagination.state, 
+                      valueListenable: widget.pagination.state,
                       builder: (context, value, child) {
                         debugPrint("load end indication state ${value.name}");
                         if (value == PaginationLoadState.allLoaded) {
@@ -175,30 +181,38 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
                               "End of the page",
-                              style: const TextStyle(fontStyle: FontStyle.normal, fontSize: 14, color: Colors.grey).bold,
+                              style: const TextStyle(
+                                fontStyle: FontStyle.normal,
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ).bold,
                             ),
                           ).animate().fadeIn(duration: 300.ms);
-                        } else if(value == PaginationLoadState.loading || value == PaginationLoadState.refreshing) {
+                        } else if (value == PaginationLoadState.loading ||
+                            value == PaginationLoadState.refreshing) {
                           return Center(
                             child: SizedBox(
                               height: 30,
                               width: 30,
                               child: CircularProgressIndicator(
                                 strokeWidth: 4,
-                                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).primaryColor,
+                                ),
                               ),
-                            )
+                            ),
                           );
                         }
                         return Container();
-                      },),
+                      },
+                    ),
                   ),
                 ),
-              )
+              ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -209,10 +223,7 @@ class _SkeletonGrid extends StatelessWidget {
   final Widget skeleton;
   final int count;
 
-  const _SkeletonGrid({
-    required this.skeleton,
-    required this.count,
-  });
+  const _SkeletonGrid({required this.skeleton, required this.count});
 
   @override
   Widget build(BuildContext context) {
