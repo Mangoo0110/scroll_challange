@@ -3,7 +3,6 @@ import 'package:scroll_challenge/src/core/packages/async_handler/lib/async_handl
 
 import '../core/di/repo_di.dart';
 import '../core/shared/product_card/product_card.dart';
-import '../core/shared/product_card/product_card_2.dart';
 import '../modules/product/model/product/product.dart';
 import '../modules/product/model/product_pagination_param.dart';
 import '../modules/product/repo/product_repo.dart';
