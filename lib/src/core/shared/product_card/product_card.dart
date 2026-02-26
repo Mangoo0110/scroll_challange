@@ -1,9 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:scroll_challenge/src/core/shared/product_card/cart_quantity_box.dart';
 import 'package:scroll_challenge/src/core/shared/product_card/product_grid_tile.dart';
 import 'package:scroll_challenge/src/modules/cart/model/cart_item/cart_item.dart';
+import '../../../modules/cart/ui/widget/cart_quantity_box.dart';
 import '../../../modules/product/model/product/product.dart';
 
 class ProductCard extends StatelessWidget {

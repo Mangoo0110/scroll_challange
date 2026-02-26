@@ -2,10 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../themes/app_colors.dart';
-import '../../../modules/product/model/product/product.dart';
-import '../widget/image_placeholder_widget.dart';
-import 'cart_quantity_box.dart';
+import '../../../../core/themes/app_colors.dart';
+import '../../model/product/product.dart';
+import '../../../../core/shared/widget/image_placeholder_widget.dart';
+import '../../../cart/ui/widget/cart_quantity_box.dart';
 
 class ProductGridTile extends StatelessWidget {
   const ProductGridTile({
