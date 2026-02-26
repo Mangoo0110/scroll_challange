@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scroll_challenge/src/core/packages/pagination_pkg/lib/src/pagination_controller.dart';
 import '../../../../core/shared/widget/paginated_list.dart';
 import '../../model/product/product.dart';
-import '../../../../core/shared/product_card/product_grid_tile.dart';
+import '../widgets/product_grid_tile.dart';
 
 class ProductListView extends StatelessWidget {
   final Axis scrollDirection;

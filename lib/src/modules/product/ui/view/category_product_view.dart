@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:scroll_challenge/src/core/packages/pagination_pkg/lib/pagination_pkg.dart';
 import '../../../../core/shared/widget/paginated_grid.dart';
-import '../../../../core/shared/product_card/product_grid_tile.dart';
+import '../widgets/product_grid_tile.dart';
 import '../../model/product/product.dart';
 
 class CategoryProductView extends StatefulWidget {
