@@ -38,8 +38,8 @@ typedef OnError = void Function(PaginationError error);
 
 class PaginationEngine<T> extends ChangeNotifier{
   
-  PaginationEngine(List<T> items, {required PaginationMem<T> mem, required this.onDemandPageCall, this.perPageLimit = 10}) : _mem = mem {
-    _mem.addNextPage(items);
+  PaginationEngine({ List<T>? items, required PaginationMem<T> mem, required this.onDemandPageCall, this.perPageLimit = 10}) : _mem = mem {
+    if(items != null) _mem.addNextPage(items);
   }
   
   /// Cache memory
@@ -75,14 +75,14 @@ class PaginationEngine<T> extends ChangeNotifier{
   }) async{
 
     PaginationPage<T>? page;
-
-    debouncer.run(() async{
-      await onDemandPageCall(
-        onDemandPage: onDemandPage,
-        onAddPage: (p) => page = p,
-        onError: (error) => setError(error: error),
-      );
-    });
+    debugPrint("Fetching page: ${onDemandPage.pageNo}");
+    await onDemandPageCall( 
+      onDemandPage: onDemandPage,
+      onAddPage: (p) {
+        page = p;
+      },
+      onError: (error) => setError(error: error),
+    );
 
     _lastFetchTime = DateTime.now();
     return page;
@@ -104,8 +104,13 @@ class PaginationEngine<T> extends ChangeNotifier{
     );
 
     if(page != null) {
+      debugPrint("Adding items: ${page.items.length}");
       _mem.addNextPage(page.items);
+      state.value = PaginationLoadState.loaded;
+    } else {
+      debugPrint("No items to add");
     }
+    notifyListeners();
   }
 
   /// Sets the state to [PaginationLoadState.refreshing]
@@ -189,6 +194,7 @@ class PaginationEngine<T> extends ChangeNotifier{
   }
 
   Future<void> refresh() async{
+    print("Refreshing...");
     search(searchText.value);
   }
 
