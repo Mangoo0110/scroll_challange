@@ -44,6 +44,8 @@ dependencies:
     path: ./lib/src/core/packages/async_handler
   pagination_pkg:
     path: ./lib/src/core/packages/pagination_pkg
+  path_provider: ^2.1.5
+  app_pigeon: ^0.1.4
 
 dev_dependencies:
   flutter_test:

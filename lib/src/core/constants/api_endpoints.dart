@@ -7,12 +7,14 @@ base class ApiEndpoints {
   
   // ---------------------- AUTH -----------------------------
   /// ### post
-  // static const String login = _Auth.login;
+  static const String login = '$baseUrl/auth/login';
 
   // ---------------------- USER -----------------------------
   /// ### get
+  static String getUserProfile(String userId) => '$baseUrl/users/$userId';
 
-  // ---------------------- Message -----------------------------
+  // ---------------------- PRODUCT -----------------------------
+  static const String getProducts = '$baseUrl/products';
 
 }
 
@@ -21,7 +23,7 @@ class _RemoteServer {
       '';
 
   static const String baseUrl =
-      '';
+      'https://fakestoreapi.com';
 }
 
 class _LocalHostWifi {

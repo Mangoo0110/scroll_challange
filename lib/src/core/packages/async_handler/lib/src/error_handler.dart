@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-
 import 'debug/debug_service.dart';
 import 'api_response.dart';
 import 'exceptions.dart';
@@ -101,17 +100,4 @@ mixin class ErrorHandler {
   //   }
   // }
 
-  // dynamic extractBodyData(Response<dynamic> response) {
-  //   return response.data["data"];
-  // }
-
-  // String? extractSuccessMessage(Response<dynamic> response, {Debugger? debugger}){
-  //   debugger?.dekhao(response);
-  //   try {
-  //     return (response.data["success"] as bool) == true ? response.data["message"] as String : null;
-  //   } catch (e) {
-  //     debugger?.dekhao("Error from parsing success message: $e");
-  //     return null;
-  //   }
-  // }
 }

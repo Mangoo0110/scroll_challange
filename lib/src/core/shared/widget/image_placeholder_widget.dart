@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../constants/assets.dart';
-
 class ImagePlaceholderWidget extends StatelessWidget {
   final double displayHeight;
   final double displayWidth;
@@ -9,11 +7,10 @@ class ImagePlaceholderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset(
-        Assets.spinach,
-        fit: BoxFit.contain,
-        height: displayHeight,
-        width: displayWidth,
+    return Icon(
+        Icons.image,
+        size: displayHeight * 0.5,
+        color: Colors.grey[400],
       );
   }
 }

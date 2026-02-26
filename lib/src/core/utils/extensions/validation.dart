@@ -1,3 +1,8 @@
+extension ValidationHelper on String {
+  bool get isValidEmail => isEmail(this);
+  bool get isValidPassword => isStrongPassword(this);
+}
+
 bool isEmail(String email) {
   final emailRegex = RegExp(
       r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$');
