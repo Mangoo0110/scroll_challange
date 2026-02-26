@@ -4,11 +4,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../di/repo_di.dart';
-import '../../themes/app_colors.dart';
-import '../../../modules/cart/controller/cart_store.dart';
-import '../../../modules/cart/model/cart/cart.dart';
-import '../../../modules/cart/model/cart_item/cart_item.dart';
+import '../../../../core/di/repo_di.dart';
+import '../../../../core/themes/app_colors.dart';
+import '../../controller/cart_store.dart';
+import '../../model/cart/cart.dart';
+import '../../model/cart_item/cart_item.dart';
 
 class CartQuantityBox extends StatefulWidget {
   const CartQuantityBox({

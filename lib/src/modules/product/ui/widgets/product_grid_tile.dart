@@ -1,11 +1,7 @@
-import 'dart:math';
 
 import 'package:flutter/material.dart';
-
-import '../../../../core/themes/app_colors.dart';
 import '../../model/product/product.dart';
 import '../../../../core/shared/widget/image_placeholder_widget.dart';
-import '../../../../core/shared/product_card/cart_quantity_box.dart';
 
 class ProductGridTile extends StatelessWidget {
   const ProductGridTile({

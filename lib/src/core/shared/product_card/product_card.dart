@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:scroll_challenge/src/core/shared/product_card/cart_quantity_box.dart';
 import 'package:scroll_challenge/src/modules/cart/model/cart_item/cart_item.dart';
+import 'package:scroll_challenge/src/modules/cart/ui/widget/cart_quantity_box.dart';
 import '../../../modules/product/model/product/product.dart';
 import '../../../modules/product/ui/widgets/product_grid_tile.dart';
 
