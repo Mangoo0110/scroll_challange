@@ -44,3 +44,8 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+/lib/src/modules/product
+/lib/src/modules/category
+/lib/src/core/shared/product_card
+/lib/src/app
+/lib/src/shared
