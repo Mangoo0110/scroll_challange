@@ -44,3 +44,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+
+/lib/src/modules
+/lib/src/app
