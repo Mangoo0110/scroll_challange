@@ -99,118 +99,126 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
     
         final itemCount = widget.pagination.totalItemsCount;
         debugPrint("Total items: ${widget.pagination.totalItemsCount}");
-        return NotificationListener<ScrollNotification>(
-          onNotification: (notification) {
-            if (notification.metrics.axis != Axis.vertical) return false;
-
-            final state = widget.pagination.state.value;
-            final canLoad =
-                state != PaginationLoadState.loading &&
-                state != PaginationLoadState.refreshing &&
-                state != PaginationLoadState.allLoaded &&
-                state != PaginationLoadState.nopages;
-
-            if (canLoad && notification.metrics.extentAfter < 250) {
-              widget.pagination.loadNextPage();
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            // This is because we might face this assertion >> 'crossAxisExtent > 0.0': is not true.
+            if (constraints.maxWidth <= 0) {
+              return const SizedBox.shrink();
             }
-            return false;
-          },
-          child: CustomScrollView(
-            primary: true,
-            //controller: scrollController,
-            physics: widget.physics,
-            slivers: [
-              SliverGrid.builder(
-                // padding: widget.padding,
-                // shrinkWrap: widget.shrinkWrap,
-                // physics: widget.disableScroll
-                //     ? const NeverScrollableScrollPhysics()
-                //     : (widget.physics ?? const AlwaysScrollableScrollPhysics()),
-                gridDelegate: widget.gridDelegate,
-                itemCount: itemCount,
-                itemBuilder: (context, index) {
-                  final isFooter =
-                      index == widget.pagination.totalItemsCount - 1;
-              
-                  // Footer: Loading/Refreshing => show skeleton tiles
-                  // if (isFooter &&
-                  //     (state == PaginationLoadState.loading ||
-                  //         state == PaginationLoadState.refreshing)) {
-                  //   return _SkeletonGrid(
-                  //     skeleton: widget.skeleton,
-                  //     count: widget.skeletonCount,
-                  //   ).animate().fadeIn(duration: 300.ms);
-                  // }
-              
-                  // Footer: All loaded => show "End"
-              
-                  // Normal grid item
-                  if (!isFooter) {
-                    final element = widget.pagination.itemAt(index);
-                    if (element == null) {
-                      return const SizedBox.shrink();
-                    }
-                    return widget
-                        .itemBuilder(index, element)
-                        .animate()
-                        .slideY(
-                          begin: 0.1,
-                          end: 0,
-                          duration: 300.ms,
-                          curve: Curves.easeOutCubic,
-                        )
-                        .fadeIn(duration: 300.ms, curve: Curves.easeOutCubic);
-                  }
-              
-                  // Footer: default empty space (when not loading / not allLoaded)
-                  return Container(child: const SizedBox.shrink());
-                },
-              ),
-              SliverToBoxAdapter(
-                child: Container(
-                  //color: Colors.amber,
-                  height: 150,
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: ValueListenableBuilder(
-                      valueListenable: widget.pagination.state,
-                      builder: (context, value, child) {
-                        debugPrint("load end indication state ${value.name}");
-                        if (value == PaginationLoadState.allLoaded) {
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              "End of the page",
-                              style: const TextStyle(
-                                fontStyle: FontStyle.normal,
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ).bold,
-                            ),
-                          ).animate().fadeIn(duration: 300.ms);
-                        } else if (value == PaginationLoadState.loading ||
-                            value == PaginationLoadState.refreshing) {
-                          return Center(
-                            child: SizedBox(
-                              height: 30,
-                              width: 30,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 4,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Theme.of(context).primaryColor,
-                                ),
-                              ),
-                            ),
-                          );
+            return NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+                if (notification.metrics.axis != Axis.vertical) return false;
+            
+                final state = widget.pagination.state.value;
+                final canLoad =
+                    state != PaginationLoadState.loading &&
+                    state != PaginationLoadState.refreshing &&
+                    state != PaginationLoadState.allLoaded &&
+                    state != PaginationLoadState.nopages;
+            
+                if (canLoad && notification.metrics.extentAfter < 250) {
+                  widget.pagination.loadNextPage();
+                }
+                return false;
+              },
+              child: CustomScrollView(
+                primary: true,
+                //controller: scrollController,
+                physics: widget.physics,
+                slivers: [
+                  SliverGrid.builder(
+                    // padding: widget.padding,
+                    // shrinkWrap: widget.shrinkWrap,
+                    // physics: widget.disableScroll
+                    //     ? const NeverScrollableScrollPhysics()
+                    //     : (widget.physics ?? const AlwaysScrollableScrollPhysics()),
+                    gridDelegate: widget.gridDelegate,
+                    itemCount: itemCount,
+                    itemBuilder: (context, index) {
+                      final isFooter =
+                          index == widget.pagination.totalItemsCount - 1;
+                  
+                      // Footer: Loading/Refreshing => show skeleton tiles
+                      // if (isFooter &&
+                      //     (state == PaginationLoadState.loading ||
+                      //         state == PaginationLoadState.refreshing)) {
+                      //   return _SkeletonGrid(
+                      //     skeleton: widget.skeleton,
+                      //     count: widget.skeletonCount,
+                      //   ).animate().fadeIn(duration: 300.ms);
+                      // }
+                  
+                      // Footer: All loaded => show "End"
+                  
+                      // Normal grid item
+                      if (!isFooter) {
+                        final element = widget.pagination.itemAt(index);
+                        if (element == null) {
+                          return const SizedBox.shrink();
                         }
-                        return Container();
-                      },
+                        return widget
+                            .itemBuilder(index, element)
+                            .animate()
+                            .slideY(
+                              begin: 0.1,
+                              end: 0,
+                              duration: 300.ms,
+                              curve: Curves.easeOutCubic,
+                            )
+                            .fadeIn(duration: 300.ms, curve: Curves.easeOutCubic);
+                      }
+                  
+                      // Footer: default empty space (when not loading / not allLoaded)
+                      return Container(child: const SizedBox.shrink());
+                    },
+                  ),
+                  SliverToBoxAdapter(
+                    child: Container(
+                      //color: Colors.amber,
+                      height: 150,
+                      child: Align(
+                        alignment: Alignment.topCenter,
+                        child: ValueListenableBuilder(
+                          valueListenable: widget.pagination.state,
+                          builder: (context, value, child) {
+                            debugPrint("load end indication state ${value.name}");
+                            if (value == PaginationLoadState.allLoaded) {
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  "End of the page",
+                                  style: const TextStyle(
+                                    fontStyle: FontStyle.normal,
+                                    fontSize: 14,
+                                    color: Colors.grey,
+                                  ).bold,
+                                ),
+                              ).animate().fadeIn(duration: 300.ms);
+                            } else if (value == PaginationLoadState.loading ||
+                                value == PaginationLoadState.refreshing) {
+                              return Center(
+                                child: SizedBox(
+                                  height: 30,
+                                  width: 30,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 4,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Theme.of(context).primaryColor,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            return Container();
+                          },
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            );
+          }
         );
       },
     );
