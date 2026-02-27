@@ -40,7 +40,7 @@ class PaginationEngine<ItemUniqueKey, ItemData> extends ChangeNotifier{
   /// Cache memory
   final PaginationMem<ItemUniqueKey, ItemData> _mem;
 
-  final Future<PageFetchResponse<ItemData>> Function({required OnDemandPage<ItemData> onDemandPage}) onDemandPageCall;
+  final Future<PageFetchResponse<ItemUniqueKey, ItemData>> Function({required OnDemandPage<ItemData> onDemandPage}) onDemandPageCall;
 
   final ValueNotifier<PaginationLoadState> _state = ValueNotifier(PaginationLoadState.idle);
   final ValueNotifier<String> searchText = ValueNotifier('');
