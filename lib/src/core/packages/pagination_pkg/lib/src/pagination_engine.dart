@@ -65,6 +65,8 @@ class PaginationEngine<T> extends ChangeNotifier{
 
   int get length => _mem.length;
 
+  bool get isEmplty => _mem.isEmpty;
+
   void deleteItemAt(int index) => _mem.deleteItemAt(index);
 
   void updateItemAt(int index, T item) => _mem.updateItemAt(index, item);
@@ -74,46 +76,50 @@ class PaginationEngine<T> extends ChangeNotifier{
   }) async{
 
     PaginationPage<T>? page;
-    debouncer.run(() async {
-      final res = await onDemandPageCall( 
+    // await debouncer.run(() async {
+      
+    // });
+    final res = await onDemandPageCall( 
         onDemandPage: onDemandPage,
       );
-      if(res is PaginationError) {
-        debugPrint("Error fetching page: ${res.page} with message: ${(res as PaginationError).message}");
-        setError(error: res as PaginationError);
-      } else if(res is PaginationPage<T>) {
-        debugPrint("Fetched page: ${res.page} with items: ${res.items}");
-        page = res;
-      }
-    });
-
+    if(res is PaginationError) {
+      debugPrint("Error fetching page: ${res.page} with message: ${(res as PaginationError).message}");
+      setError(error: res as PaginationError);
+    } else if(res is PaginationPage<T>) {
+      debugPrint("Fetched page: ${res.page} with items: ${res.items}");
+      page = res;
+    }
     _lastFetchTime = DateTime.now();
     return page;
   }
 
   void search(String text) async{
-    if( state.value == PaginationLoadState.refreshing) {
-      return;
-    }
-    searchText.value = text;
-    setRefresh();
-  
-    final page = await requestData(
-      onDemandPage: LoadNextPage<T>(
-        limit: perPageLimit,
-        pageNo: 1,
-        cursor: null,
-      ),
-    );
-
-    if(page != null) {
-      debugPrint("Adding items: ${page.items.length}");
-      _mem.addNextPage(page.items);
-      state.value = PaginationLoadState.loaded;
-    } else {
-      debugPrint("No items to add");
-    }
-    notifyListeners();
+    debouncer.run(() async {
+      if( state.value == PaginationLoadState.refreshing) {
+        return;
+      }
+      searchText.value = text;
+      setRefresh();
+    
+      final page = await requestData(
+        onDemandPage: LoadNextPage<T>(
+          limit: perPageLimit,
+          pageNo: 1,
+          cursor: null,
+        ),
+      );
+      debugPrint("Search result for text: $text is page: ${page?.page} with items count: ${page?.items.length}");
+      if(page != null) {
+        debugPrint("Adding items: ${page.items.length}");
+        _mem.addNextPage(page.items);
+        state.value = PaginationLoadState.loaded;
+      } else {
+        debugPrint("No items to add.. setting state to nopages");
+        state.value = PaginationLoadState.nopages;
+      }
+      notifyListeners();
+    });
+    
   }
 
   /// Sets the state to [PaginationLoadState.refreshing]
@@ -158,22 +164,24 @@ class PaginationEngine<T> extends ChangeNotifier{
       return;
     }
     
-    state.value = PaginationLoadState.loading;
-    final res = await requestData(
-      onDemandPage: LoadNextPage(
-        limit: perPageLimit,
-        pageNo: _mem.nextPageToFetch,
-        cursor: _mem.last,
-      ),
-    );
+    await debouncer.run(() async{
+      state.value = PaginationLoadState.loading;
+      final res = await requestData(
+        onDemandPage: LoadNextPage(
+          limit: perPageLimit,
+          pageNo: _mem.nextPageToFetch,
+          cursor: _mem.last,
+        ),
+      );
 
-    _mem.addNextPage(res?.items ?? []);
-    if(res?.items.isEmpty ?? false) {
-      state.value = PaginationLoadState.allLoaded;
-    } else {
-      state.value = PaginationLoadState.loaded;
-    }
-    notifyListeners();
+      _mem.addNextPage(res?.items ?? []);
+      if(res?.items.isEmpty ?? false) {
+        state.value = PaginationLoadState.allLoaded;
+      } else {
+        state.value = PaginationLoadState.loaded;
+      }
+      notifyListeners();
+    });
   }
 
 
@@ -183,21 +191,29 @@ class PaginationEngine<T> extends ChangeNotifier{
       return;
     }
 
-    debugPrint("Previous page(${_mem.previousPageToFetch}) in demand...");
+    debouncer.run(() async{
+      debugPrint("Previous page(${_mem.previousPageToFetch}) in demand...");
+      final res = await requestData(
+        onDemandPage: LoadPreviousPage(
+          limit: perPageLimit,
+          pageNo: _mem.previousPageToFetch,
+          cursor: _mem.first,
+        ),
+      );
+      _mem.addFrontPage(res?.items ?? []);
+      if(res?.items.isEmpty ?? false) {
+        state.value = PaginationLoadState.allLoaded;
+      } else {
+        state.value = PaginationLoadState.loaded;
+      }
+      notifyListeners();
+    });
 
-    final res = await requestData(
-      onDemandPage: LoadPreviousPage(
-        limit: perPageLimit,
-        pageNo: _mem.previousPageToFetch,
-        cursor: _mem.first,
-      ),
-    );
-
-    _mem.addFrontPage(res?.items ?? []);
+    
   }
 
   Future<void> refresh() async{
-    print("Refreshing...");
+    debugPrint("Refreshing...");
     search(searchText.value);
   }
 
