@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'pagination_mem.dart';
-import '../pagination_page.dart';
+import '../page_fetch_response.dart';
 
 class MultiPagePaginationMem<T> extends PaginationMem<T> {
   final ValueNotifier<List<PaginationPage<T>>> pages = ValueNotifier([]);
@@ -27,7 +27,7 @@ class MultiPagePaginationMem<T> extends PaginationMem<T> {
       final int emptySlots = perPageLimit - pages.value.last.items.length;
       pages.value.last.items.addAll(items.getRange(0, min(items.length, emptySlots)));
       addNextPage(items.getRange(emptySlots, items.length).toList());
-      debugPrint("Filling(${emptySlots}) last page: ${pages.value.last}");
+      debugPrint("Filling($emptySlots) last page: ${pages.value.last}");
       return;
     }
     // Case 2: Add to new page
@@ -35,7 +35,6 @@ class MultiPagePaginationMem<T> extends PaginationMem<T> {
     final page = PaginationPage<T>(
       items: items.getRange(0, min(items.length, perPageLimit)).toList(),
       page: pages.value.isNotEmpty ? pages.value.last.page + 1 : firstPageVal,
-      limit: perPageLimit,
     );
     pages.value.add(page);
     debugPrint("Added new page, items: ${page.items.length}");
@@ -66,7 +65,6 @@ class MultiPagePaginationMem<T> extends PaginationMem<T> {
     final page = PaginationPage<T>(
       items: items.getRange(0, min(items.length, perPageLimit)).toList(),
       page: pages.value.isNotEmpty ? pages.value.first.page - 1 : firstPageVal,
-      limit: perPageLimit,
     );
     pages.value.insert(page.page, page);
     addFrontPage(items.getRange(pages.value.first.items.length, items.length).toList());
@@ -95,7 +93,6 @@ class MultiPagePaginationMem<T> extends PaginationMem<T> {
   }
   
   @override
-  // TODO: implement length
   int get length => pages.value.length * perPageLimit - (pages.value.isEmpty ? 0 : (perPageLimit - pages.value.last.items.length));
   
   @override

@@ -1,6 +1,5 @@
 library;
 
-export 'src/pagination_error.dart';
-export 'src/pagination_page.dart';
+export 'src/page_fetch_response.dart';
 export 'src/pagination_engine.dart';
-export 'src/pagination_controller.dart' show MultiPagePaginationController, InfinityScrollPaginationController;
+export 'src/pagination_controller.dart' show InfinityScrollPaginationController;
