@@ -22,29 +22,25 @@ sealed class OnDemandPage<T> {
   OnDemandPage({required this.limit, required this.pageNo, this.cursor});
 }
 
-class LoadNextPage<T> extends OnDemandPage<T> {
+class LoadNextPage<ItemData> extends OnDemandPage<ItemData> {
   LoadNextPage({required super.limit, required super.pageNo, super.cursor});
 }
 
-class LoadPreviousPage<T> extends OnDemandPage<T> {
+class LoadPreviousPage<ItemData> extends OnDemandPage<ItemData> {
   LoadPreviousPage({required super.limit, required super.pageNo, super.cursor});
 }
 
 
-typedef OnAddPage<T> = void Function(PaginationPage<T> page);
-typedef OnError = void Function(PaginationError error);
+class PaginationEngine<ItemUniqueKey, ItemData> extends ChangeNotifier{
 
-
-class PaginationEngine<T> extends ChangeNotifier{
-  
-  PaginationEngine({ List<T>? items, required PaginationMem<T> mem, required this.onDemandPageCall, this.perPageLimit = 10}) : _mem = mem {
+  PaginationEngine({ Map<ItemUniqueKey, ItemData>? items, required PaginationMem<ItemUniqueKey, ItemData> mem, required this.onDemandPageCall, this.perPageLimit = 10}) : _mem = mem {
     if(items != null) _mem.addNextPage(items);
   }
   
   /// Cache memory
-  final PaginationMem<T> _mem;
+  final PaginationMem<ItemUniqueKey, ItemData> _mem;
 
-  final Future<PageFetchResponse<T>> Function({required OnDemandPage<T> onDemandPage}) onDemandPageCall;
+  final Future<PageFetchResponse<ItemData>> Function({required OnDemandPage<ItemData> onDemandPage}) onDemandPageCall;
 
   final ValueNotifier<PaginationLoadState> _state = ValueNotifier(PaginationLoadState.idle);
   final ValueNotifier<String> searchText = ValueNotifier('');
@@ -61,7 +57,7 @@ class PaginationEngine<T> extends ChangeNotifier{
 
   int get totalItemsCount => _mem.length;
 
-  T? itemAt(int index) => _mem.itemAt(index);
+  ItemData? itemAt(int index) => _mem.itemAt(index);
 
   int get length => _mem.length;
 
@@ -69,13 +65,13 @@ class PaginationEngine<T> extends ChangeNotifier{
 
   void deleteItemAt(int index) => _mem.deleteItemAt(index);
 
-  void updateItemAt(int index, T item) => _mem.updateItemAt(index, item);
+  void updateItemAt(int index, ItemData item) => _mem.updateItemAt(index, item);
 
-  Future<PaginationPage<T>?> requestData({
-    required OnDemandPage<T> onDemandPage,
+  Future<PaginationPage<ItemUniqueKey, ItemData>?> requestData({
+    required OnDemandPage<ItemData> onDemandPage,
   }) async{
 
-    PaginationPage<T>? page;
+    PaginationPage<ItemUniqueKey, ItemData>? page;
     // await debouncer.run(() async {
       
     // });
@@ -85,7 +81,7 @@ class PaginationEngine<T> extends ChangeNotifier{
     if(res is PaginationError) {
       debugPrint("Error fetching page: ${res.page} with message: ${(res as PaginationError).message}");
       setError(error: res as PaginationError);
-    } else if(res is PaginationPage<T>) {
+    } else if(res is PaginationPage<ItemUniqueKey, ItemData>) {
       debugPrint("Fetched page: ${res.page} with items: ${res.items}");
       page = res;
     }
@@ -102,7 +98,7 @@ class PaginationEngine<T> extends ChangeNotifier{
       setRefresh();
     
       final page = await requestData(
-        onDemandPage: LoadNextPage<T>(
+        onDemandPage: LoadNextPage<ItemData>(
           limit: perPageLimit,
           pageNo: 1,
           cursor: null,
@@ -174,7 +170,7 @@ class PaginationEngine<T> extends ChangeNotifier{
         ),
       );
 
-      _mem.addNextPage(res?.items ?? []);
+      _mem.addNextPage(res?.items ?? <ItemUniqueKey, ItemData>{});
       if(res?.items.isEmpty ?? false) {
         state.value = PaginationLoadState.allLoaded;
       } else {
@@ -200,7 +196,7 @@ class PaginationEngine<T> extends ChangeNotifier{
           cursor: _mem.first,
         ),
       );
-      _mem.addFrontPage(res?.items ?? []);
+      _mem.addFrontPage(res?.items ?? <ItemUniqueKey, ItemData>{});
       if(res?.items.isEmpty ?? false) {
         state.value = PaginationLoadState.allLoaded;
       } else {
