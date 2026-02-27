@@ -16,21 +16,26 @@ import '../../modules/product/repo/product_repo.dart';
 final serviceLocator = GetIt.instance;
 
 void repoDi() async {
-  serviceLocator.registerLazySingleton<ProductRepo>(
-    () => FakeStoreProductRepo(fallbackRepo: MockProductRepo()),
-  );
+  
   serviceLocator.registerLazySingleton<AppPigeon>(
     () => GhostPigeon(baseUrl: ApiEndpoints.baseUrl),
   );
+
+  serviceLocator.registerLazySingleton<ProductRepo>(
+    () => FakeStoreProductRepo(fallbackRepo: MockProductRepo(), appPigeon: serviceLocator<AppPigeon>()),
+  );
+
   serviceLocator.registerLazySingleton<CategoryRepo>(
     () => CategoryRepoImpl(appPigeon: serviceLocator<AppPigeon>()),
   );
+
   serviceLocator.registerLazySingleton<CartRepo>(
     () => CartRepoImpl(
       localService: LocalCartService(),
       remoteService: RemoteCartService(),
     ),
   );
+  
   serviceLocator.registerLazySingleton<CartStore>(
     () => CartStore(repo: serviceLocator<CartRepo>()),
   );
