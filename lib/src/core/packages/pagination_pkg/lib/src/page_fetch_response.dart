@@ -4,8 +4,8 @@ sealed class PageFetchResponse<T> {
   const PageFetchResponse({required this.page});
 }
 
-class PaginationPage<T> extends PageFetchResponse<T> {
-  final List<T> items;  
+class PaginationPage<ItemUniqueKey, ItemData> extends PageFetchResponse<ItemData> {
+  final Map<ItemUniqueKey, ItemData> items;
 
   PaginationPage({
     required this.items,
