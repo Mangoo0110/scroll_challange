@@ -15,6 +15,7 @@ base class ApiEndpoints {
 
   // ---------------------- PRODUCT -----------------------------
   static const String getProducts = '$baseUrl/products';
+  static String singleProduct(String productId) => '$baseUrl/products/$productId';
 
 }
 
