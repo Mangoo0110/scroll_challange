@@ -1,6 +1,9 @@
 
 
+import 'dart:math';
+
 import 'package:app_pigeon/app_pigeon.dart';
+import 'package:flutter/foundation.dart';
 import 'package:scroll_challenge/src/core/constants/api_endpoints.dart';
 import 'package:scroll_challenge/src/core/packages/async_handler/lib/async_handler.dart';
 
@@ -134,11 +137,12 @@ class FakeStoreProductRepo extends ProductRepo with ErrorHandler {
     required int page,
     required int limit,
   }) {
+    debugPrint("paginating for page $page with limit $limit on items count ${items.length}");
     final start = (page - 1) * limit;
     if (start >= items.length || start < 0) {
       return const <Product>[];
     }
-    final end = (start + limit) > items.length ? items.length : (start + limit);
+    final end = min(start + limit, items.length);
     if(end > items.length || end < 0) {
       _debugger.dekhao('Pagination end index $end is greater than total items ${items.length}. Adjusting end index to ${items.length}.');
       return const <Product>[];

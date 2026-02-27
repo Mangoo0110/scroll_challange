@@ -54,9 +54,6 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   }
 
   _setTabController() {
-    if(_tabController != null) {
-      
-    }
     _tapProductsPaginations["*For You"] =
           InfinityScrollPaginationController<Product>(
             maxCapacityCount: 100,
@@ -75,7 +72,6 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     for (int index = 0; index < _categoryPagination.length; index++) {
       final category = _categoryPagination.itemAt(index);
       if (category == null) continue;
-
       _tapProductsPaginations[category.id] =
           InfinityScrollPaginationController<Product>(
             maxCapacityCount: 100,
@@ -90,13 +86,15 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
               return res.toProductPaginationResponse(onDemandPage: onDemandPage);
             },
           );
-    
     }
+
+    // Initialize the TabController after setting up the paginations for all tabs
     _tabController = TabController(
       length: _tapProductsPaginations.length,
       vsync: this,
     );
-
+    
+    // Updates ui with new tabs and their paginations
     setState(() {});
     
   }
@@ -147,7 +145,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             ),
           );
         }
-        final controller = _tabController;
+        final controller = _tabController; // Referencing the controller here to ensure it's initialized before use and reference not removed by outside operations
         if (controller == null) {
           return const SizedBox.shrink();
         }
@@ -214,11 +212,11 @@ class _TabProductGridState extends State<_TabProductGrid>
       pagination: widget.pagination,
       skeleton: const Center(child: CircularProgressIndicator()),
       skeletonCount: 1,
-      gridDelegate: sliverGridDelegateConfig2(),
+      gridDelegate: sliverGridDelegateConfig1(),
       itemBuilder: (index, data) {
         return Padding(
           padding: const EdgeInsets.only(right: 2.0),
-          child: ProductCard2(product: data),
+          child: ProductCard(product: data),
         );
       },
     );

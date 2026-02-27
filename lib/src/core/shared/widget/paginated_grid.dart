@@ -98,7 +98,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
         }
     
         final itemCount = widget.pagination.totalItemsCount;
-        debugPrint("Total items: ${widget.pagination.totalItemsCount}");
+        debugPrint("Total items::: $itemCount");
         return LayoutBuilder(
           builder: (context, constraints) {
             // This is because we might face this assertion >> 'crossAxisExtent > 0.0': is not true.
@@ -135,8 +135,9 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
                     gridDelegate: widget.gridDelegate,
                     itemCount: itemCount,
                     itemBuilder: (context, index) {
+                      debugPrint("Building item at index $index");
                       final isFooter =
-                          index == widget.pagination.totalItemsCount - 1;
+                          index == widget.pagination.totalItemsCount;
                   
                       // Footer: Loading/Refreshing => show skeleton tiles
                       // if (isFooter &&
@@ -169,11 +170,11 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
                       }
                   
                       // Footer: default empty space (when not loading / not allLoaded)
-                      return Container(child: const SizedBox.shrink());
+                      return const SizedBox.shrink();
                     },
                   ),
                   SliverToBoxAdapter(
-                    child: Container(
+                    child: SizedBox(
                       //color: Colors.amber,
                       height: 150,
                       child: Align(
