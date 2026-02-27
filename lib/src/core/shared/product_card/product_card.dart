@@ -22,7 +22,7 @@ class ProductCard extends StatelessWidget {
                     right: 10,
                     top: imageRect.top + (imageRect.height * 0.55),
                     child: SizedBox(
-                      height: min(imageRect.height * 0.45, 45),
+                      height: min(imageRect.height * 0.45, 40),
                       child: CartQuantityBox(
                         initialCartImage: CartItem(
                           productId: product.id,

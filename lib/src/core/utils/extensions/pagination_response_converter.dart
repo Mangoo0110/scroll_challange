@@ -9,7 +9,7 @@ extension ProductPaginationResponseConverter on ApiResponse<ProductPage> {
   PageFetchResponse<Product> toProductPaginationResponse({required OnDemandPage<Product> onDemandPage}) {
     switch (this) {        
       case SuccessResponse<ProductPage> _:
-        if (data != null) {
+        if (data == null) {
           return PaginationError(page: onDemandPage.pageNo, message: "No products found");
         }
         return PaginationPage(

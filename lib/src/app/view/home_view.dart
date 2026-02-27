@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pagination_pkg/pagination_pkg.dart';
+import 'package:scroll_challenge/src/app/widget/search_input.dart';
 import 'package:scroll_challenge/src/core/shared/widget/paginated_grid.dart';
 import 'package:scroll_challenge/src/core/utils/extensions/pagination_response_converter.dart';
 import 'package:scroll_challenge/src/modules/category/model/category.dart';
@@ -7,6 +8,7 @@ import 'package:scroll_challenge/src/modules/category/repo/category_repo.dart';
 
 import '../../core/di/repo_di.dart';
 import '../../core/shared/product_card/product_card.dart';
+import '../../core/shared/product_card/product_card_2.dart';
 import '../../core/utils/utils.dart';
 import '../../modules/product/model/product/product.dart';
 import '../../modules/product/repo/product_repo.dart';
@@ -19,11 +21,12 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
-  final ProductRepo _repo = serviceLocator<ProductRepo>();
+
   final TextEditingController _searchController = TextEditingController();
+
   late final InfinityScrollPaginationController<Category> _categoryPagination;
-  final Map<String, InfinityScrollPaginationController<Product>>
-  _tapProductsPaginations = {};
+  final Map<String, InfinityScrollPaginationController<Product>> _tapProductsPaginations = {};
+
   TabController? _tabController;
   String? _error;
 
@@ -31,16 +34,29 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _categoryPagination = InfinityScrollPaginationController<Category>(
-            maxCapacityCount: 100,
+            maxCapacityCount: 10000,
             onDemandPageCall:({required onDemandPage}) async{
               final res = await serviceLocator<CategoryRepo>().getCategories();
               return res.toCategoryPaginationResponse(onDemandPage: onDemandPage);
             },
           );
     _categoryPagination.refresh();
+    _categoryPagination.addListener(_decideProductTabSetup);
+  }
+
+  _decideProductTabSetup() {
+      if(_categoryPagination.state.value == PaginationLoadState.loaded) {
+        _setTabController();
+      } else if(_categoryPagination.state.value == PaginationLoadState.error) {
+        _error = "Failed to load categories. Please try again.";
+        setState(() {});
+      }
   }
 
   _setTabController() {
+    if(_tabController != null) {
+      
+    }
     _tapProductsPaginations["*For You"] =
           InfinityScrollPaginationController<Product>(
             maxCapacityCount: 100,
@@ -80,12 +96,18 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       length: _tapProductsPaginations.length,
       vsync: this,
     );
+
+    setState(() {});
+    
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _tabController?.dispose();
+    _categoryPagination.removeListener(_decideProductTabSetup);
+    _categoryPagination.dispose();
+    _tapProductsPaginations.forEach((_, controller) => controller.dispose());
     super.dispose();
   }
 
@@ -125,9 +147,6 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             ),
           );
         }
-
-        _setTabController();
-
         final controller = _tabController;
         if (controller == null) {
           return const SizedBox.shrink();
@@ -195,15 +214,11 @@ class _TabProductGridState extends State<_TabProductGrid>
       pagination: widget.pagination,
       skeleton: const Center(child: CircularProgressIndicator()),
       skeletonCount: 1,
-      gridDelegate: sliverGridDelegateConfig(),
+      gridDelegate: sliverGridDelegateConfig2(),
       itemBuilder: (index, data) {
         return Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: SizedBox(
-            height: 120,
-            width: 120,
-            child: ProductCard(product: data),
-          ),
+          padding: const EdgeInsets.only(right: 2.0),
+          child: ProductCard2(product: data),
         );
       },
     );
@@ -232,45 +247,12 @@ class _HomeHeader extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: TextField(
-                  onTapOutside: (event) => FocusScope.of(context).unfocus(),
-                  controller: searchController,
-                  textInputAction: TextInputAction.search,
-                  onSubmitted: (_) => onSearchPressed(),
-
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    hintText: 'Search products',
-                    isDense: true,
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: const Icon(Icons.search_rounded),
-                    ),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.redAccent, width: 2),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.redAccent, width: 2),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.redAccent, width: 2),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    disabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.redAccent, width: 1),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                ),
+                child: SearchInput(controller: searchController, onSubmitted: onSearchPressed,)
               ),
             ],
           ),
           const SizedBox(height: 12),
+          
           SizedBox(
             height: 34,
             child: ListView.separated(
@@ -283,6 +265,7 @@ class _HomeHeader extends StatelessWidget {
               itemCount: 3,
             ),
           ),
+
           const SizedBox(height: 12),
           SizedBox(
             height: 110,
@@ -351,6 +334,7 @@ class _AdaptiveTabBarHeader extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
+    debugPrint('shrinkOffset: $shrinkOffset, maxExtent: $maxExtent, minExtent: $minExtent');
     final pinnedLike = shrinkOffset >= (maxExtent - minExtent - 2);
     return Container(
       color: Colors.white,
@@ -362,6 +346,7 @@ class _AdaptiveTabBarHeader extends SliverPersistentHeaderDelegate {
         labelPadding: const EdgeInsets.symmetric(horizontal: 12),
         indicatorSize: TabBarIndicatorSize.label,
         dividerColor: Colors.transparent,
+        
         labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
         unselectedLabelStyle: const TextStyle(
           fontWeight: FontWeight.w500,
@@ -383,7 +368,10 @@ class _AdaptiveTabBarHeader extends SliverPersistentHeaderDelegate {
                 color: const Color(0xFFF2F2F2),
                 borderRadius: BorderRadius.circular(10),
               ),
-        tabs: tabs.map((label) => Tab(text: label)).toList(),
+        tabs: tabs.map((label) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
+          child: Tab(text: label,),
+        )).toList(),
       ),
     );
   }
