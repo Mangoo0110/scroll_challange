@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:scroll_challenge/src/core/utils/utils.dart';
 
-class PaginatedGridView<T> extends StatefulWidget {
-  final PaginationEngine<T> pagination;
+class PaginatedGridView<K, T> extends StatefulWidget {
+  final PaginationEngine<K, T> pagination;
 
   /// Widget shown as skeleton cell (provided by the caller)
   final Widget skeleton;
@@ -46,10 +46,10 @@ class PaginatedGridView<T> extends StatefulWidget {
   });
 
   @override
-  State<PaginatedGridView<T>> createState() => _PaginatedGridViewState<T>();
+  State<PaginatedGridView<K, T>> createState() => _PaginatedGridViewState<K, T>();
 }
 
-class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
+class _PaginatedGridViewState<K, T> extends State<PaginatedGridView<K, T>> {
   static const double _loadMoreThreshold = 200.0;
   final ScrollController scrollController = ScrollController();
 

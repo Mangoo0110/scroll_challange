@@ -5,7 +5,7 @@ import '../widgets/product_grid_tile.dart';
 import '../../model/product/product.dart';
 
 class ProductGridView extends StatefulWidget {
-  final InfinityScrollPaginationController<Product> productPaginationController;
+  final InfinityScrollPaginationController<String, Product> productPaginationController;
   const ProductGridView({super.key, required this.productPaginationController});
 
   @override
@@ -20,7 +20,7 @@ class _ProductGridViewState extends State<ProductGridView> {
 
   @override
   Widget build(BuildContext context) {
-    return PaginatedGridView<Product>(
+    return PaginatedGridView<String, Product>(
       pagination: widget.productPaginationController,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,

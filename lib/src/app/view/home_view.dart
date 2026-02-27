@@ -24,8 +24,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
 
   final TextEditingController _searchController = TextEditingController();
 
-  late final InfinityScrollPaginationController<Category> _categoryPagination;
-  final Map<String, InfinityScrollPaginationController<Product>> _tapProductsPaginations = {};
+  late final InfinityScrollPaginationController<String, Category> _categoryPagination;
+  final Map<String, InfinityScrollPaginationController<String, Product>> _tapProductsPaginations = {};
 
   TabController? _tabController;
   String? _error;
@@ -33,7 +33,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _categoryPagination = InfinityScrollPaginationController<Category>(
+    _categoryPagination = InfinityScrollPaginationController<String, Category>(
             maxCapacityCount: 10000,
             onDemandPageCall:({required onDemandPage}) async{
               final res = await serviceLocator<CategoryRepo>().getCategories();
@@ -55,7 +55,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
 
   _setTabController() {
     _tapProductsPaginations["*For You"] =
-          InfinityScrollPaginationController<Product>(
+          InfinityScrollPaginationController<String, Product>(
             maxCapacityCount: 100,
             onDemandPageCall:({required onDemandPage}) async{
               final res = await serviceLocator<ProductRepo>().getProducts(
@@ -73,7 +73,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       final category = _categoryPagination.itemAt(index);
       if (category == null) continue;
       _tapProductsPaginations[category.id] =
-          InfinityScrollPaginationController<Product>(
+          InfinityScrollPaginationController< String, Product>(
             maxCapacityCount: 100,
             onDemandPageCall:({required onDemandPage}) async{
               final res = await serviceLocator<ProductRepo>().getProducts(
@@ -191,7 +191,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
 class _TabProductGrid extends StatefulWidget {
   const _TabProductGrid({super.key, required this.pagination});
 
-  final PaginationEngine<Product> pagination;
+  final PaginationEngine<String, Product> pagination;
 
   @override
   State<_TabProductGrid> createState() => _TabProductGridState();

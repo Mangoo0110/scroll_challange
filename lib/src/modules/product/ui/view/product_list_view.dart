@@ -7,7 +7,7 @@ import '../widgets/product_grid_tile.dart';
 class ProductListView extends StatelessWidget {
   final Axis scrollDirection;
   final bool isPaginated;
-  final InfinityScrollPaginationController<Product> productsPagination;
+  final InfinityScrollPaginationController<String, Product> productsPagination;
   const ProductListView({
     super.key,
     required this.scrollDirection,
