@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pagination_pkg/pagination_pkg.dart';
 import 'package:scroll_challenge/src/core/shared/widget/paginated_grid.dart';
+import 'package:scroll_challenge/src/core/utils/extensions/pagination_response_converter.dart';
 import 'package:scroll_challenge/src/modules/category/model/category.dart';
 import 'package:scroll_challenge/src/modules/category/repo/category_repo.dart';
 
@@ -30,37 +31,12 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _categoryPagination = InfinityScrollPaginationController<Category>(
-      maxCapacityCount: 100,
-      onDemandPageCall:
-          ({
-            required onAddPage,
-            required onDemandPage,
-            required onError,
-          }) async {
-            await handleFutureRequest(
-              futureRequest: () async =>
-                  serviceLocator<CategoryRepo>().getCategories(),
-              onSuccess: (data) {
-                onAddPage(
-                  PaginationPage(
-                    items: data,
-                    page: onDemandPage.pageNo,
-                    limit: onDemandPage.limit,
-                  ),
-                );
-              },
-              onError: (error) {
-                debugPrint("Got error: ${error.message}");
-                onError(
-                  PaginationError(
-                    message: error.message,
-                    page: onDemandPage.pageNo,
-                  ),
-                );
-              },
-            );
-          },
-    );
+            maxCapacityCount: 100,
+            onDemandPageCall:({required onDemandPage}) async{
+              final res = await serviceLocator<CategoryRepo>().getCategories();
+              return res.toCategoryPaginationResponse(onDemandPage: onDemandPage);
+            },
+          );
     _categoryPagination.refresh();
   }
 
@@ -68,40 +44,16 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     _tapProductsPaginations["*For You"] =
           InfinityScrollPaginationController<Product>(
             maxCapacityCount: 100,
-            onDemandPageCall:
-                ({
-                  required onAddPage,
-                  required onDemandPage,
-                  required onError,
-                }) async {
-                  await handleFutureRequest(
-                    futureRequest: () async =>
-                        serviceLocator<ProductRepo>().getProducts(
-                          ProductQueryParams(
-                            categoryId: null,
-                            page: onDemandPage.pageNo,
-                            limit: onDemandPage.limit,
-                          ),
-                        ),
-                    onSuccess: (data) {
-                      onAddPage(
-                        PaginationPage(
-                          items: data.items,
-                          page: onDemandPage.pageNo,
-                          limit: onDemandPage.limit,
-                        ),
-                      );
-                    },
-                    onError: (error) {
-                      onError(
-                        PaginationError(
-                          message: error.message,
-                          page: onDemandPage.pageNo,
-                        ),
-                      );
-                    },
-                  );
-                },
+            onDemandPageCall:({required onDemandPage}) async{
+              final res = await serviceLocator<ProductRepo>().getProducts(
+                ProductQueryParams(
+                  categoryId: null,
+                  page: onDemandPage.pageNo,
+                  limit: onDemandPage.limit,
+                ),
+              );
+              return res.toProductPaginationResponse(onDemandPage: onDemandPage);
+            },
           );
     
     for (int index = 0; index < _categoryPagination.length; index++) {
@@ -111,40 +63,16 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       _tapProductsPaginations[category.id] =
           InfinityScrollPaginationController<Product>(
             maxCapacityCount: 100,
-            onDemandPageCall:
-                ({
-                  required onAddPage,
-                  required onDemandPage,
-                  required onError,
-                }) async {
-                  await handleFutureRequest(
-                    futureRequest: () async =>
-                        serviceLocator<ProductRepo>().getProducts(
-                          ProductQueryParams(
-                            categoryId: category.id,
-                            page: onDemandPage.pageNo,
-                            limit: onDemandPage.limit,
-                          ),
-                        ),
-                    onSuccess: (data) {
-                      onAddPage(
-                        PaginationPage(
-                          items: data.items,
-                          page: onDemandPage.pageNo,
-                          limit: onDemandPage.limit,
-                        ),
-                      );
-                    },
-                    onError: (error) {
-                      onError(
-                        PaginationError(
-                          message: error.message,
-                          page: onDemandPage.pageNo,
-                        ),
-                      );
-                    },
-                  );
-                },
+            onDemandPageCall:({required onDemandPage}) async{
+              final res = await serviceLocator<ProductRepo>().getProducts(
+                ProductQueryParams(
+                  categoryId: category.id,
+                  page: onDemandPage.pageNo,
+                  limit: onDemandPage.limit,
+                ),
+              );
+              return res.toProductPaginationResponse(onDemandPage: onDemandPage);
+            },
           );
     
     }

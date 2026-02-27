@@ -1,4 +1,4 @@
-abstract class ApiResponse<T> {
+sealed class ApiResponse<T> {
   final bool success;
   final String message;
   final T? data;
