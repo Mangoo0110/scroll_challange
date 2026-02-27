@@ -1,10 +1,9 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pagination_pkg/src/pagination_error.dart';
 import '../debouncer.dart';
 import 'cache/pagination_mem.dart';
-import 'pagination_page.dart';
+import 'page_fetch_response.dart';
 
 enum PaginationLoadState {
   idle,
@@ -45,7 +44,7 @@ class PaginationEngine<T> extends ChangeNotifier{
   /// Cache memory
   final PaginationMem<T> _mem;
 
-  final Function({required OnDemandPage<T> onDemandPage, required OnAddPage<T> onAddPage, required OnError onError}) onDemandPageCall;
+  final Future<PageFetchResponse<T>> Function({required OnDemandPage<T> onDemandPage}) onDemandPageCall;
 
   final ValueNotifier<PaginationLoadState> _state = ValueNotifier(PaginationLoadState.idle);
   final ValueNotifier<String> searchText = ValueNotifier('');
@@ -75,14 +74,18 @@ class PaginationEngine<T> extends ChangeNotifier{
   }) async{
 
     PaginationPage<T>? page;
-    debugPrint("Fetching page: ${onDemandPage.pageNo}");
-    await onDemandPageCall( 
-      onDemandPage: onDemandPage,
-      onAddPage: (p) {
-        page = p;
-      },
-      onError: (error) => setError(error: error),
-    );
+    debouncer.run(() async {
+      final res = await onDemandPageCall( 
+        onDemandPage: onDemandPage,
+      );
+      if(res is PaginationError) {
+        debugPrint("Error fetching page: ${res.page} with message: ${(res as PaginationError).message}");
+        setError(error: res as PaginationError);
+      } else if(res is PaginationPage<T>) {
+        debugPrint("Fetched page: ${res.page} with items: ${res.items}");
+        page = res;
+      }
+    });
 
     _lastFetchTime = DateTime.now();
     return page;
