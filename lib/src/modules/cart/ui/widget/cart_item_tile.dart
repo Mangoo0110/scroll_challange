@@ -23,13 +23,16 @@ class CartItemTile extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const SizedBox(
+        SizedBox(
           height: 52,
           width: 52,
-          child: ImagePlaceholderWidget(
-            displayHeight: 52,
-            displayWidth: 52,
-          ),
+          child: Image.network(
+            item.imageUrl ?? '',
+            errorBuilder: (_, __, ___) => const ImagePlaceholderWidget(
+              displayHeight: 52,
+              displayWidth: 52,
+            ),
+          )
         ),
         const SizedBox(width: 12),
         Expanded(

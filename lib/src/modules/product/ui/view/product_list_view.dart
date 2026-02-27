@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scroll_challenge/src/core/packages/pagination_pkg/lib/src/pagination_controller.dart';
+import 'package:pagination_pkg/pagination_pkg.dart';
 import '../../../../core/shared/widget/paginated_list.dart';
 import '../../model/product/product.dart';
 import '../widgets/product_grid_tile.dart';
@@ -7,7 +7,7 @@ import '../widgets/product_grid_tile.dart';
 class ProductListView extends StatelessWidget {
   final Axis scrollDirection;
   final bool isPaginated;
-  final SinglePagePaginationController<Product> productsPagination;
+  final InfinityScrollPaginationController<Product> productsPagination;
   const ProductListView({
     super.key,
     required this.scrollDirection,
@@ -20,7 +20,9 @@ class ProductListView extends StatelessWidget {
     return PaginatedListWidget(
       isPaginated: isPaginated,
       pagination: productsPagination,
-      skeleton: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+      skeleton: CircularProgressIndicator(
+        color: Theme.of(context).primaryColor,
+      ),
       skeletonCount: 1,
       scrollDirection: scrollDirection,
       builder: (index, product) => Padding(

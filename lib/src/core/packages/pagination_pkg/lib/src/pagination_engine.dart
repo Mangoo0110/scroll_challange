@@ -1,10 +1,9 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pagination_pkg/src/pagination_error.dart';
 import '../debouncer.dart';
 import 'cache/pagination_mem.dart';
-import 'pagination_page.dart';
+import 'page_fetch_response.dart';
 
 enum PaginationLoadState {
   idle,
@@ -38,14 +37,14 @@ typedef OnError = void Function(PaginationError error);
 
 class PaginationEngine<T> extends ChangeNotifier{
   
-  PaginationEngine(List<T> items, {required PaginationMem<T> mem, required this.onDemandPageCall, this.perPageLimit = 10}) : _mem = mem {
-    _mem.addNextPage(items);
+  PaginationEngine({ List<T>? items, required PaginationMem<T> mem, required this.onDemandPageCall, this.perPageLimit = 10}) : _mem = mem {
+    if(items != null) _mem.addNextPage(items);
   }
   
   /// Cache memory
   final PaginationMem<T> _mem;
 
-  final Function({required OnDemandPage<T> onDemandPage, required OnAddPage<T> onAddPage, required OnError onError}) onDemandPageCall;
+  final Future<PageFetchResponse<T>> Function({required OnDemandPage<T> onDemandPage}) onDemandPageCall;
 
   final ValueNotifier<PaginationLoadState> _state = ValueNotifier(PaginationLoadState.idle);
   final ValueNotifier<String> searchText = ValueNotifier('');
@@ -75,13 +74,17 @@ class PaginationEngine<T> extends ChangeNotifier{
   }) async{
 
     PaginationPage<T>? page;
-
-    debouncer.run(() async{
-      await onDemandPageCall(
+    debouncer.run(() async {
+      final res = await onDemandPageCall( 
         onDemandPage: onDemandPage,
-        onAddPage: (p) => page = p,
-        onError: (error) => setError(error: error),
       );
+      if(res is PaginationError) {
+        debugPrint("Error fetching page: ${res.page} with message: ${(res as PaginationError).message}");
+        setError(error: res as PaginationError);
+      } else if(res is PaginationPage<T>) {
+        debugPrint("Fetched page: ${res.page} with items: ${res.items}");
+        page = res;
+      }
     });
 
     _lastFetchTime = DateTime.now();
@@ -104,8 +107,13 @@ class PaginationEngine<T> extends ChangeNotifier{
     );
 
     if(page != null) {
+      debugPrint("Adding items: ${page.items.length}");
       _mem.addNextPage(page.items);
+      state.value = PaginationLoadState.loaded;
+    } else {
+      debugPrint("No items to add");
     }
+    notifyListeners();
   }
 
   /// Sets the state to [PaginationLoadState.refreshing]
@@ -189,6 +197,7 @@ class PaginationEngine<T> extends ChangeNotifier{
   }
 
   Future<void> refresh() async{
+    print("Refreshing...");
     search(searchText.value);
   }
 

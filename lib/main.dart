@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'src/app/app_view.dart';
+import 'src/app/view/app_view.dart';
 import 'src/core/di/repo_di.dart';
 import 'src/core/themes/themes.dart';
 
