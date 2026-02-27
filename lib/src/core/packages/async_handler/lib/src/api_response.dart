@@ -8,6 +8,11 @@ sealed class ApiResponse<T> {
 
 class SuccessResponse<T> extends ApiResponse<T> {
   SuccessResponse({super.message = "Success!", required super.data}): super(success: true);
+
+  @override
+  String toString() {
+    return '''SuccessResponse{message: $message, data: $data}''';
+  }
 }
 
 class ErrorResponse<T> extends ApiResponse<T> {

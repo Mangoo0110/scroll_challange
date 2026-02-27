@@ -1,8 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:scroll_challenge/src/core/packages/async_handler/lib/async_handler.dart';
-import 'package:scroll_challenge/src/core/packages/pagination_pkg/lib/pagination_pkg.dart';
 import 'package:scroll_challenge/src/modules/category/model/category.dart';
 import 'package:scroll_challenge/src/modules/product/model/product/product.dart';
-
+import 'package:pagination_pkg/pagination_pkg.dart';
 import '../../../modules/product/model/product_pagination_param.dart';
 
 extension ProductPaginationResponseConverter on ApiResponse<ProductPage> {
@@ -29,7 +29,7 @@ extension CategoryPaginationResponseConverter on ApiResponse<List<Category>> {
   PageFetchResponse<Category> toCategoryPaginationResponse({required OnDemandPage<Category> onDemandPage}) {
     switch (this) {
       case SuccessResponse<List<Category>> _:
-        if (data != null) {
+        if (data == null) {
           return PaginationError(page: onDemandPage.pageNo, message: "No categories found");
         }
         return PaginationPage(
