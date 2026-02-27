@@ -1,5 +1,4 @@
-import 'dart:convert';
-import 'dart:io';
+
 
 import 'package:app_pigeon/app_pigeon.dart';
 import 'package:scroll_challenge/src/core/constants/api_endpoints.dart';
@@ -20,6 +19,7 @@ class FakeStoreProductRepo extends ProductRepo with ErrorHandler {
 
   final ProductRepo _fallbackRepo;
   final AppPigeon appPigeon;
+  final Debugger _debugger = ServiceDebugger();
 
   List<Product>? _cache;
 
@@ -28,6 +28,7 @@ class FakeStoreProductRepo extends ProductRepo with ErrorHandler {
   AsyncRequest<ProductPage> getProducts(ProductQueryParams params) async {
     final remote = await asyncTryCatch<ProductPage>(
       tryFunc: () async {
+        _debugger.dekhao('Fetching products from FakeStore API with params: $params');
         final res = await appPigeon.get(
           ApiEndpoints.getProducts,
         );
@@ -35,6 +36,7 @@ class FakeStoreProductRepo extends ProductRepo with ErrorHandler {
             .map((e) => _mapFakeStoreProduct(Map<String, dynamic>.from(e)))
             .toList();
         final filtered = _filterProducts(allProducts, params);
+        _debugger.dekhao("Filtered products count: ${filtered.length}");
         final pageItems = _paginate(
           items: filtered,
           page: params.page,
@@ -133,10 +135,14 @@ class FakeStoreProductRepo extends ProductRepo with ErrorHandler {
     required int limit,
   }) {
     final start = (page - 1) * limit;
-    if (start >= items.length) {
+    if (start >= items.length || start < 0) {
       return const <Product>[];
     }
     final end = (start + limit) > items.length ? items.length : (start + limit);
+    if(end > items.length || end < 0) {
+      _debugger.dekhao('Pagination end index $end is greater than total items ${items.length}. Adjusting end index to ${items.length}.');
+      return const <Product>[];
+    }
     return items.sublist(start, end);
   }
 

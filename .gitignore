@@ -46,6 +46,4 @@ app.*.map.json
 
 /lib/src/modules/category
 /lib/src/modules/cart
-/lib/src/core/shared
 /lib/src/app
-/lib/src/shared
