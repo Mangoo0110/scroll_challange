@@ -4,7 +4,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:scroll_challenge/src/app/app_manager.dart';
 import 'package:scroll_challenge/src/app/routing/app_router.dart';
 import 'package:scroll_challenge/src/auth_di.dart';
-import 'src/app/view/app_view.dart';
 import 'src/core/di/repo_di.dart';
 import 'src/core/themes/themes.dart';
 
