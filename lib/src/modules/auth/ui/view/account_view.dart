@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:scroll_challenge/src/auth_di.dart';
-import 'package:async_handler/async_handler.dart';
 import 'package:scroll_challenge/src/core/shared/reactive_notifier/snackbar_notifier.dart';
 import 'package:scroll_challenge/src/core/utils/utils.dart';
 import 'package:scroll_challenge/src/modules/auth/model/auth_user.dart';
