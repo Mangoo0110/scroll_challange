@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:pagination_pkg/pagination_pkg.dart';
 import 'package:scroll_challenge/src/app/widget/search_input.dart';
 import 'package:scroll_challenge/src/core/shared/widget/paginated_grid.dart';
-import 'package:scroll_challenge/src/core/utils/extensions/pagination_response_converter.dart';
+import 'package:scroll_challenge/src/app/helpers/pagination_response_converter.dart';
 import 'package:scroll_challenge/src/modules/category/model/category.dart';
 import 'package:scroll_challenge/src/modules/category/repo/category_repo.dart';
 
-import '../../core/di/repo_di.dart';
-import '../../core/shared/product_card/product_card.dart';
+import '../di/repo_di.dart';
+import '../widget/product_card/product_card.dart';
 import '../../core/utils/utils.dart';
 import '../../modules/product/model/product/product.dart';
 import '../../modules/product/repo/product_repo.dart';

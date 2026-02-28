@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/di/repo_di.dart';
+import '../di/repo_di.dart';
 import '../../modules/cart/controller/cart_store.dart';
 import '../../modules/cart/ui/view/cart_view.dart';
 import 'account_view.dart';
