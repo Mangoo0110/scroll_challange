@@ -24,13 +24,14 @@ void repoDi() async {
 
   serviceLocator.registerLazySingleton<ProductRepo>(
     () => 
-    //MockProductRepo()
-    FakeStoreProductRepo(fallbackRepo: MockProductRepo(), appPigeon: serviceLocator<AppPigeon>()),
+    MockProductRepo()
+    //FakeStoreProductRepo(fallbackRepo: MockProductRepo(), appPigeon: serviceLocator<AppPigeon>()),
   );
 
   serviceLocator.registerLazySingleton<CategoryRepo>(
-    () => CategoryRepoImpl(appPigeon: serviceLocator<AppPigeon>()),
-    //MockCategoryRepo(),
+    () => 
+    //CategoryRepoImpl(appPigeon: serviceLocator<AppPigeon>()),
+    MockCategoryRepo(),
   );
 
   serviceLocator.registerLazySingleton<CartRepo>(

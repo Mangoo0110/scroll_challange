@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pagination_pkg/pagination_pkg.dart';
 import 'package:scroll_challenge/src/app/widget/search_input.dart';
@@ -30,7 +31,6 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   _tapProductsPaginations = {};
 
   TabController? _tabController;
-  ScrollController _scrollController = ScrollController();
   String? _error;
 
   @override
@@ -45,9 +45,6 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     );
     _categoryPagination.refresh();
     _categoryPagination.addListener(_decideProductTabSetup);
-    _scrollController.addListener(() {
-
-    });
   }
 
   _decideProductTabSetup() {
@@ -104,6 +101,13 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     setState(() {});
   }
 
+  Future<void> _handleRefresh() async {
+    await _categoryPagination.refresh();
+    for (final controller in _tapProductsPaginations.values) {
+      await controller.refresh();
+    }
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -111,7 +115,6 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     _categoryPagination.removeListener(_decideProductTabSetup);
     _categoryPagination.dispose();
     _tapProductsPaginations.forEach((_, controller) => controller.dispose());
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -155,11 +158,45 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         if (controller == null) {
           return const SizedBox.shrink();
         }
-        return Scaffold(
-          body: NestedScrollView(
-            controller: _scrollController,
+        final nested = RefreshIndicator(
+          onRefresh: _handleRefresh,
+          triggerMode: RefreshIndicatorTriggerMode.onEdge,
+          edgeOffset: 0,
+          notificationPredicate: (notification) => notification.depth == 2,
+          child: NestedScrollView(
+            physics: BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics()
+            ),
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
+                // CupertinoSliverRefreshControl(
+                //   onRefresh: _handleRefresh,
+                //   builder: (context, refreshState, pulledExtent, refreshTriggerPullDistance, refreshIndicatorExtent) {
+                //     return Padding(
+                //       padding: const EdgeInsets.only(top: 100),
+                //       child: CupertinoSliverRefreshControl.buildRefreshIndicator(
+                //         context,
+                //         refreshState,
+                //         pulledExtent,
+                //         refreshTriggerPullDistance,
+                //         refreshIndicatorExtent,
+                //       ),
+                //     );
+                //   },
+                // ),
+                // CupertinoSliverRefreshControl(
+                //   refreshTriggerPullDistance: 110,
+                //   refreshIndicatorExtent: 80,
+                //   onRefresh: _handleRefresh,
+                //   builder: (context, mode, pulledExtent, _, __) {
+                //     final progress = (pulledExtent / 110).clamp(0.0, 1.0);
+                //     return _DarazRefreshIndicator(
+                //       mode: mode,
+                //       progress: progress,
+                //     );
+                //   },
+                // ),
+          
                 SliverSafeArea(
                   bottom: false,
                   sliver: SliverToBoxAdapter(
@@ -169,6 +206,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
+                
                 SliverOverlapAbsorber(
                   handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
                     context,
@@ -195,6 +233,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             ),
           ),
         );
+
+        return Scaffold(body: nested);
       },
     );
   }
@@ -214,11 +254,11 @@ class _TabProductGrid extends StatefulWidget {
   State<_TabProductGrid> createState() => _TabProductGridState();
 }
 
-class _TabProductGridState extends State<_TabProductGrid>{
+class _TabProductGridState extends State<_TabProductGrid> {
   @override
   void initState() {
     super.initState();
-    if(widget.pagination.isEmplty) widget.pagination.refresh();
+    if (widget.pagination.isEmplty) widget.pagination.refresh();
   }
 
   @override
@@ -247,9 +287,6 @@ class _TabProductGridState extends State<_TabProductGrid>{
       },
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }
 
 class _HomeHeader extends StatelessWidget {
@@ -417,6 +454,82 @@ class _AdaptiveTabBarHeader extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(covariant _AdaptiveTabBarHeader oldDelegate) {
     return oldDelegate.tabController != tabController ||
         oldDelegate.tabs != tabs;
+  }
+}
+
+class _DarazRefreshIndicator extends StatelessWidget {
+  const _DarazRefreshIndicator({required this.mode, required this.progress});
+
+  final RefreshIndicatorMode mode;
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isRefreshing = mode == RefreshIndicatorMode.refresh;
+    final bool isArmed = mode == RefreshIndicatorMode.armed;
+    final bgColor = const Color(0xFFF5EEE8);
+
+    String text;
+    if (isRefreshing) {
+      text = 'Refreshing...';
+    } else if (isArmed) {
+      text = 'Release to refresh';
+    } else {
+      text = 'Pull to refresh';
+    }
+
+    return Container(
+      color: bgColor,
+      alignment: Alignment.bottomCenter,
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Opacity(
+        opacity: (progress * 1.25).clamp(0.0, 1.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Container(
+              height: 42,
+              width: 42,
+              decoration: BoxDecoration(
+                color: Colors.orange,
+                shape: BoxShape.circle,
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x22000000),
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: isRefreshing
+                  ? const Padding(
+                      padding: EdgeInsets.all(10),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Icon(
+                      isArmed
+                          ? Icons.keyboard_double_arrow_down_rounded
+                          : Icons.keyboard_arrow_down_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              text,
+              style: const TextStyle(
+                fontSize: 13.5,
+                color: Color(0xFF8C8C8C),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

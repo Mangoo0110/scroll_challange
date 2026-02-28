@@ -104,7 +104,8 @@ class _PaginatedGridViewState<K, T> extends State<PaginatedGridView<K, T>> {
               },
               child: CustomScrollView(
                 key: widget.scrollViewKey,
-                physics: widget.physics,
+                physics:
+                    widget.physics,
                 slivers: [
                   if (widget.overlapHandle != null)
                     SliverOverlapInjector(handle: widget.overlapHandle!),
