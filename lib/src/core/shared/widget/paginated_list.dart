@@ -3,8 +3,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pagination_pkg/pagination_pkg.dart';
 import 'package:scroll_challenge/src/core/utils/utils.dart';
 
-class PaginatedListWidget<T> extends StatefulWidget {
-  final PaginationEngine<T> pagination;
+class PaginatedListWidget<K, T> extends StatefulWidget {
+  final PaginationEngine<K, T> pagination;
   final Axis scrollDirection;
   final Widget skeleton;
   final bool isPaginated;
@@ -25,10 +25,10 @@ class PaginatedListWidget<T> extends StatefulWidget {
   });
 
   @override
-  State<PaginatedListWidget<T>> createState() => _PaginatedListWidgetState<T>();
+  State<PaginatedListWidget<K, T>> createState() => _PaginatedListWidgetState<K, T>();
 }
 
-class _PaginatedListWidgetState<T> extends State<PaginatedListWidget<T>> {
+class _PaginatedListWidgetState<K, T> extends State<PaginatedListWidget<K, T>> {
   final ScrollController scrollController = ScrollController();
 
   @override
