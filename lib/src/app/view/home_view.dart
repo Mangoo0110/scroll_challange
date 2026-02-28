@@ -214,17 +214,15 @@ class _TabProductGrid extends StatefulWidget {
   State<_TabProductGrid> createState() => _TabProductGridState();
 }
 
-class _TabProductGridState extends State<_TabProductGrid>
-    with AutomaticKeepAliveClientMixin {
+class _TabProductGridState extends State<_TabProductGrid>{
   @override
   void initState() {
     super.initState();
-    widget.pagination.refresh();
+    if(widget.pagination.isEmplty) widget.pagination.refresh();
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return Builder(
       builder: (context) {
         final overlapHandle = NestedScrollView.sliverOverlapAbsorberHandleFor(
