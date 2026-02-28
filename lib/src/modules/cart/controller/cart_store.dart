@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:scroll_challenge/src/core/packages/async_handler/lib/async_handler.dart';
 import 'package:scroll_challenge/src/core/shared/reactive_notifier/process_notifier.dart';
 import 'package:scroll_challenge/src/core/utils/utils.dart';
 import '../model/cart/cart.dart';
 import '../model/cart_item/cart_item.dart';
 import '../repo/cart_repo.dart';
+import 'package:async_handler/async_handler.dart';
 
 class CartStore {
   CartStore({required this.repo});

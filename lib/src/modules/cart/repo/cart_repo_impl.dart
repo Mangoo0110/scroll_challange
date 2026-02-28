@@ -1,7 +1,6 @@
 import 'dart:io';
 
-import 'package:scroll_challenge/src/core/packages/async_handler/lib/async_handler.dart';
-
+import 'package:async_handler/async_handler.dart';
 import '../model/cart/cart.dart';
 import '../model/cart_item/cart_item.dart';
 import '../model/cart_ops/cart_ops.dart';

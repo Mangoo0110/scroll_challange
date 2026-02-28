@@ -1,7 +1,7 @@
 import 'package:app_pigeon/app_pigeon.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scroll_challenge/src/core/constants/api_endpoints.dart';
-import 'package:scroll_challenge/src/core/packages/async_handler/lib/async_handler.dart';
+import 'package:async_handler/async_handler.dart';
 import 'package:scroll_challenge/src/modules/product/model/product/product.dart';
 import 'package:scroll_challenge/src/modules/product/model/product_pagination_param.dart';
 import 'package:scroll_challenge/src/modules/product/repo/fakestore_product_repo.dart';
