@@ -1,8 +1,13 @@
-import 'dart:convert';
-import 'dart:io';
 
+
+import 'dart:math';
+
+import 'package:app_pigeon/app_pigeon.dart';
+import 'package:flutter/foundation.dart';
+import 'package:scroll_challenge/src/core/constants/api_endpoints.dart';
 import 'package:scroll_challenge/src/core/packages/async_handler/lib/async_handler.dart';
 
+import 'package:scroll_challenge/src/core/utils/utils.dart';
 import '../model/product/product.dart';
 import '../model/product_pagination_param.dart';
 import 'mock_product_repo.dart';
@@ -10,38 +15,31 @@ import 'product_repo.dart';
 
 class FakeStoreProductRepo extends ProductRepo with ErrorHandler {
   FakeStoreProductRepo({
-    HttpClient? client,
     ProductRepo? fallbackRepo,
-    this.baseUrl = 'https://fakestoreapi.com',
-  }) : _client = client ?? HttpClient(),
+    required this.appPigeon,
+  }) :
        _fallbackRepo = fallbackRepo ?? MockProductRepo();
 
-  final HttpClient _client;
   final ProductRepo _fallbackRepo;
-  final String baseUrl;
+  final AppPigeon appPigeon;
+  final Debugger _debugger = ServiceDebugger();
 
   List<Product>? _cache;
 
-  @override
-  AsyncRequest<List<String>> getCategories() async {
-    final remote = await asyncTryCatch<List<String>>(
-      tryFunc: () async {
-        final categories = await _fetchCategories();
-        return SuccessResponse<List<String>>(data: categories);
-      },
-    );
-    if (remote is SuccessResponse<List<String>>) {
-      return remote;
-    }
-    return _fallbackRepo.getCategories();
-  }
 
   @override
   AsyncRequest<ProductPage> getProducts(ProductQueryParams params) async {
     final remote = await asyncTryCatch<ProductPage>(
       tryFunc: () async {
-        final allProducts = await _fetchAllProducts();
+        _debugger.dekhao('Fetching products from FakeStore API with params: $params');
+        final res = await appPigeon.get(
+          ApiEndpoints.getProducts,
+        );
+        final allProducts = (extractBodyData(res) as List<dynamic>)
+            .map((e) => _mapFakeStoreProduct(Map<String, dynamic>.from(e)))
+            .toList();
         final filtered = _filterProducts(allProducts, params);
+        _debugger.dekhao("Filtered products count: ${filtered.length}");
         final pageItems = _paginate(
           items: filtered,
           page: params.page,
@@ -66,13 +64,12 @@ class FakeStoreProductRepo extends ProductRepo with ErrorHandler {
   AsyncRequest<Product?> getProductById(String id) async {
     final remote = await asyncTryCatch<Product?>(
       tryFunc: () async {
-        final products = await _fetchAllProducts();
+        final res = await appPigeon.get(
+          ApiEndpoints.singleProduct(id),
+        );
         Product? product;
-        for (final item in products) {
-          if (item.id == id) {
-            product = item;
-            break;
-          }
+        if (extractBodyData(res) != null) {
+          product = _mapFakeStoreProduct(extractBodyData(res));
         }
         return SuccessResponse<Product?>(data: product);
       },
@@ -89,7 +86,9 @@ class FakeStoreProductRepo extends ProductRepo with ErrorHandler {
   ) async {
     final remote = await asyncTryCatch<List<ProductVariant>>(
       tryFunc: () async {
-        final products = await _fetchAllProducts();
+        final products = await getProducts(const ProductQueryParams(page: 1, limit: 100)).then(
+          (res) => res is SuccessResponse<ProductPage> ? (res.data?.items ?? []) : [],
+        );
         List<ProductVariant> variants = const <ProductVariant>[];
         for (final product in products) {
           if (product.id == productId) {
@@ -138,53 +137,19 @@ class FakeStoreProductRepo extends ProductRepo with ErrorHandler {
     required int page,
     required int limit,
   }) {
+    debugPrint("paginating for page $page with limit $limit on items count ${items.length}");
     final start = (page - 1) * limit;
-    if (start >= items.length) {
+    if (start >= items.length || start < 0) {
       return const <Product>[];
     }
-    final end = (start + limit) > items.length ? items.length : (start + limit);
+    final end = min(start + limit, items.length);
+    if(end > items.length || end < 0) {
+      _debugger.dekhao('Pagination end index $end is greater than total items ${items.length}. Adjusting end index to ${items.length}.');
+      return const <Product>[];
+    }
     return items.sublist(start, end);
   }
 
-  Future<List<Product>> _fetchAllProducts() async {
-    if (_cache != null) {
-      return _cache!;
-    }
-    final uri = Uri.parse('$baseUrl/products');
-    final req = await _client.getUrl(uri);
-    final res = await req.close();
-    final body = await utf8.decoder.bind(res).join();
-    if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw HttpException('Failed to fetch products (${res.statusCode})');
-    }
-    final data = jsonDecode(body);
-    if (data is! List) {
-      throw const FormatException('Expected a product array');
-    }
-    _cache = data
-        .whereType<Map>()
-        .map((raw) => _mapFakeStoreProduct(Map<String, dynamic>.from(raw)))
-        .toList(growable: false);
-    return _cache!;
-  }
-
-  Future<List<String>> _fetchCategories() async {
-    final uri = Uri.parse('$baseUrl/products/categories');
-    final req = await _client.getUrl(uri);
-    final res = await req.close();
-    final body = await utf8.decoder.bind(res).join();
-    if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw HttpException('Failed to fetch categories (${res.statusCode})');
-    }
-    final data = jsonDecode(body);
-    if (data is! List) {
-      throw const FormatException('Expected category array');
-    }
-    return data
-        .map((e) => e.toString().trim())
-        .where((e) => e.isNotEmpty)
-        .toList(growable: false);
-  }
 
   Product _mapFakeStoreProduct(Map<String, dynamic> json) {
     final id = json['id']?.toString() ?? '';
@@ -192,7 +157,7 @@ class FakeStoreProductRepo extends ProductRepo with ErrorHandler {
     final priceRaw = json['price'];
     final price = (priceRaw is num) ? priceRaw.toDouble() : 0.0;
 
-    final productId = 'fs_$id';
+    final productId = id;
     final variantId = 'fsv_$id';
     return Product(
       id: productId,
