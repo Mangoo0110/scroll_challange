@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:app_pigeon/app_pigeon.dart';
+import 'package:scroll_challenge/src/modules/category/repo/mock_category_repo.dart';
 
 import '../constants/api_endpoints.dart';
 import '../../modules/cart/controller/cart_store.dart';
@@ -22,11 +23,14 @@ void repoDi() async {
   );
 
   serviceLocator.registerLazySingleton<ProductRepo>(
-    () => FakeStoreProductRepo(fallbackRepo: MockProductRepo(), appPigeon: serviceLocator<AppPigeon>()),
+    () => 
+    //MockProductRepo()
+    FakeStoreProductRepo(fallbackRepo: MockProductRepo(), appPigeon: serviceLocator<AppPigeon>()),
   );
 
   serviceLocator.registerLazySingleton<CategoryRepo>(
     () => CategoryRepoImpl(appPigeon: serviceLocator<AppPigeon>()),
+    //MockCategoryRepo(),
   );
 
   serviceLocator.registerLazySingleton<CartRepo>(

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:pagination_pkg/pagination_pkg.dart';
 import 'package:scroll_challenge/src/app/widget/search_input.dart';
@@ -8,7 +10,6 @@ import 'package:scroll_challenge/src/modules/category/repo/category_repo.dart';
 
 import '../../core/di/repo_di.dart';
 import '../../core/shared/product_card/product_card.dart';
-import '../../core/shared/product_card/product_card_2.dart';
 import '../../core/utils/utils.dart';
 import '../../modules/product/model/product/product.dart';
 import '../../modules/product/repo/product_repo.dart';
@@ -21,71 +22,76 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
-
   final TextEditingController _searchController = TextEditingController();
 
-  late final InfinityScrollPaginationController<String, Category> _categoryPagination;
-  final Map<String, InfinityScrollPaginationController<String, Product>> _tapProductsPaginations = {};
+  late final InfinityScrollPaginationController<String, Category>
+  _categoryPagination;
+  final Map<String, InfinityScrollPaginationController<String, Product>>
+  _tapProductsPaginations = {};
 
   TabController? _tabController;
+  ScrollController _scrollController = ScrollController();
   String? _error;
 
   @override
   void initState() {
     super.initState();
     _categoryPagination = InfinityScrollPaginationController<String, Category>(
-            maxCapacityCount: 10000,
-            onDemandPageCall:({required onDemandPage}) async{
-              final res = await serviceLocator<CategoryRepo>().getCategories();
-              return res.toCategoryPaginationResponse(onDemandPage: onDemandPage);
-            },
-          );
+      maxCapacityCount: 10000,
+      onDemandPageCall: ({required onDemandPage}) async {
+        final res = await serviceLocator<CategoryRepo>().getCategories();
+        return res.toCategoryPaginationResponse(onDemandPage: onDemandPage);
+      },
+    );
     _categoryPagination.refresh();
     _categoryPagination.addListener(_decideProductTabSetup);
+    _scrollController.addListener(() {
+
+    });
   }
 
   _decideProductTabSetup() {
-      if(_categoryPagination.state.value == PaginationLoadState.loaded) {
-        _setTabController();
-      } else if(_categoryPagination.state.value == PaginationLoadState.error) {
-        _error = "Failed to load categories. Please try again.";
-        setState(() {});
-      }
+    if (_categoryPagination.state.value == PaginationLoadState.loaded) {
+      _setTabController();
+    } else if (_categoryPagination.state.value == PaginationLoadState.error) {
+      _error = "Failed to load categories. Please try again.";
+      setState(() {});
+    }
   }
 
   _setTabController() {
     _tapProductsPaginations["*For You"] =
-          InfinityScrollPaginationController<String, Product>(
-            maxCapacityCount: 100,
-            onDemandPageCall:({required onDemandPage}) async{
-              final res = await serviceLocator<ProductRepo>().getProducts(
-                ProductQueryParams(
-                  categoryId: null,
-                  page: onDemandPage.pageNo,
-                  limit: onDemandPage.limit,
-                ),
-              );
-              return res.toProductPaginationResponse(onDemandPage: onDemandPage);
-            },
-          );
-    
+        InfinityScrollPaginationController<String, Product>(
+          maxCapacityCount: 100,
+          onDemandPageCall: ({required onDemandPage}) async {
+            final res = await serviceLocator<ProductRepo>().getProducts(
+              ProductQueryParams(
+                categoryId: null,
+                page: onDemandPage.pageNo,
+                limit: onDemandPage.limit,
+              ),
+            );
+            return res.toProductPaginationResponse(onDemandPage: onDemandPage);
+          },
+        );
+
     for (int index = 0; index < _categoryPagination.length; index++) {
       final category = _categoryPagination.itemAt(index);
       if (category == null) continue;
-      _tapProductsPaginations[category.id] =
-          InfinityScrollPaginationController< String, Product>(
-            maxCapacityCount: 100,
-            onDemandPageCall:({required onDemandPage}) async{
-              final res = await serviceLocator<ProductRepo>().getProducts(
-                ProductQueryParams(
-                  categoryId: category.id,
-                  page: onDemandPage.pageNo,
-                  limit: onDemandPage.limit,
-                ),
-              );
-              return res.toProductPaginationResponse(onDemandPage: onDemandPage);
-            },
+      _tapProductsPaginations[category
+          .id] = InfinityScrollPaginationController<String, Product>(
+        maxCapacityCount: 100,
+        onDemandPageCall: ({required onDemandPage}) async {
+          final res = await serviceLocator<ProductRepo>().getProducts(
+            ProductQueryParams(
+              categoryId: category.id,
+              page: onDemandPage.pageNo,
+              limit: onDemandPage.limit,
+            ),
           );
+          return res.toProductPaginationResponse(onDemandPage: onDemandPage);
+        },
+      );
     }
 
     // Initialize the TabController after setting up the paginations for all tabs
@@ -93,10 +99,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       length: _tapProductsPaginations.length,
       vsync: this,
     );
-    
+
     // Updates ui with new tabs and their paginations
     setState(() {});
-    
   }
 
   @override
@@ -106,12 +111,12 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     _categoryPagination.removeListener(_decideProductTabSetup);
     _categoryPagination.dispose();
     _tapProductsPaginations.forEach((_, controller) => controller.dispose());
+    _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-
     return ListenableBuilder(
       listenable: _categoryPagination,
       builder: (context, child) {
@@ -145,12 +150,14 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             ),
           );
         }
-        final controller = _tabController; // Referencing the controller here to ensure it's initialized before use and reference not removed by outside operations
+        final controller =
+            _tabController; // Referencing the controller here to ensure it's initialized before use and reference not removed by outside operations
         if (controller == null) {
           return const SizedBox.shrink();
         }
         return Scaffold(
           body: NestedScrollView(
+            controller: _scrollController,
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
                 SliverSafeArea(
@@ -162,24 +169,29 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: _AdaptiveTabBarHeader(
-                    tabController: controller,
-                    tabs: _tapProductsPaginations.keys.toList(),
+                SliverOverlapAbsorber(
+                  handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                    context,
+                  ),
+                  sliver: SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _AdaptiveTabBarHeader(
+                      tabController: controller,
+                      tabs: _tapProductsPaginations.keys.toList(),
+                    ),
                   ),
                 ),
               ];
             },
             body: TabBarView(
               controller: controller,
-              children: _tapProductsPaginations.entries.map(
-                (entry) {
-                  return _TabProductGrid(
-                    key: ValueKey('tab-${entry.key}'),
-                    pagination: _tapProductsPaginations[entry.key]!,
-                  );
-                }).toList(),
+              children: _tapProductsPaginations.entries.map((entry) {
+                return _TabProductGrid(
+                  key: ValueKey('tab-${entry.key}'),
+                  tabId: entry.key,
+                  pagination: _tapProductsPaginations[entry.key]!,
+                );
+              }).toList(),
             ),
           ),
         );
@@ -189,8 +201,13 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
 }
 
 class _TabProductGrid extends StatefulWidget {
-  const _TabProductGrid({super.key, required this.pagination});
+  const _TabProductGrid({
+    super.key,
+    required this.tabId,
+    required this.pagination,
+  });
 
+  final String tabId;
   final PaginationEngine<String, Product> pagination;
 
   @override
@@ -208,15 +225,26 @@ class _TabProductGridState extends State<_TabProductGrid>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return PaginatedGridView(
-      pagination: widget.pagination,
-      skeleton: const Center(child: CircularProgressIndicator()),
-      skeletonCount: 1,
-      gridDelegate: sliverGridDelegateConfig1(),
-      itemBuilder: (index, data) {
-        return Padding(
-          padding: const EdgeInsets.only(right: 2.0),
-          child: ProductCard(product: data),
+    return Builder(
+      builder: (context) {
+        final overlapHandle = NestedScrollView.sliverOverlapAbsorberHandleFor(
+          context,
+        );
+        return PaginatedGridView(
+          scrollViewKey: PageStorageKey<String>(
+            'products-scroll-${widget.tabId}',
+          ),
+          overlapHandle: overlapHandle,
+          pagination: widget.pagination,
+          skeleton: const Center(child: CircularProgressIndicator()),
+          skeletonCount: 1,
+          gridDelegate: sliverGridDelegateConfig1(),
+          itemBuilder: (index, data) {
+            return Padding(
+              padding: const EdgeInsets.only(right: 2.0),
+              child: ProductCard(product: data),
+            );
+          },
         );
       },
     );
@@ -245,12 +273,15 @@ class _HomeHeader extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: SearchInput(controller: searchController, onSubmitted: onSearchPressed,)
+                child: SearchInput(
+                  controller: searchController,
+                  onSubmitted: onSearchPressed,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          
+
           SizedBox(
             height: 34,
             child: ListView.separated(
@@ -265,6 +296,7 @@ class _HomeHeader extends StatelessWidget {
           ),
 
           const SizedBox(height: 12),
+
           SizedBox(
             height: 110,
             child: ListView.separated(
@@ -324,7 +356,7 @@ class _AdaptiveTabBarHeader extends SliverPersistentHeaderDelegate {
   double get minExtent => 50;
 
   @override
-  double get maxExtent => 70;
+  double get maxExtent => 54;
 
   @override
   Widget build(
@@ -332,44 +364,53 @@ class _AdaptiveTabBarHeader extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    debugPrint('shrinkOffset: $shrinkOffset, maxExtent: $maxExtent, minExtent: $minExtent');
-    final pinnedLike = shrinkOffset >= (maxExtent - minExtent - 2);
-    return Container(
-      color: Colors.white,
-      padding: EdgeInsets.fromLTRB(8, pinnedLike ? 0 : 8, 8, 0),
-      alignment: Alignment.centerLeft,
-      child: TabBar(
-        controller: tabController,
-        isScrollable: true,
-        labelPadding: const EdgeInsets.symmetric(horizontal: 12),
-        indicatorSize: TabBarIndicatorSize.label,
-        dividerColor: Colors.transparent,
-        
-        labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-        unselectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.w500,
-          fontSize: 16,
+    final range = (maxExtent - minExtent).clamp(1.0, double.infinity);
+    final progress = (shrinkOffset / range).clamp(0.0, 1.0);
+    final currentHeight = (maxExtent - shrinkOffset).clamp(
+      minExtent,
+      maxExtent,
+    );
+    final bg = Color.lerp(const Color(0xFFF2F2F2), Colors.white, progress)!;
+    final indicatorColor = Theme.of(context).colorScheme.primary;
+
+    return SizedBox(
+      height: currentHeight,
+      child: ColoredBox(
+        color: bg,
+        child: Align(
+          alignment: Alignment.bottomLeft,
+          child: TabBar(
+            controller: tabController,
+            isScrollable: true,
+            indicatorSize: TabBarIndicatorSize.label,
+            dividerColor: Colors.transparent,
+            labelStyle: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 12,
+            ),
+            labelColor: indicatorColor,
+            unselectedLabelColor: const Color(0xFF5F5F5F),
+            indicatorPadding: EdgeInsets.zero,
+            padding: EdgeInsets.zero,
+            indicator: DarazIndicator(
+              progress: progress,
+              color: indicatorColor,
+              horizontalInset: 0,
+            ),
+            tabs: tabs
+                .map(
+                  (label) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Tab(text: label),
+                  ),
+                )
+                .toList(),
+          ),
         ),
-        labelColor: pinnedLike
-            ? Theme.of(context).colorScheme.primary
-            : Colors.black,
-        unselectedLabelColor: const Color(0xFF5F5F5F),
-        indicator: pinnedLike
-            ? UnderlineTabIndicator(
-                borderRadius: BorderRadius.circular(999),
-                borderSide: BorderSide(
-                  width: 3,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              )
-            : BoxDecoration(
-                color: const Color(0xFFF2F2F2),
-                borderRadius: BorderRadius.circular(10),
-              ),
-        tabs: tabs.map((label) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
-          child: Tab(text: label,),
-        )).toList(),
       ),
     );
   }
@@ -378,5 +419,95 @@ class _AdaptiveTabBarHeader extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(covariant _AdaptiveTabBarHeader oldDelegate) {
     return oldDelegate.tabController != tabController ||
         oldDelegate.tabs != tabs;
+  }
+}
+
+class DarazIndicator extends Decoration {
+  const DarazIndicator({
+    required this.progress,
+    this.color = Colors.orange,
+    this.thickness = 3,
+    this.horizontalInset = 8,
+  });
+
+  final double progress; // 0 => unpinned bubble, 1 => pinned underline
+  final Color color;
+  final double thickness;
+  final double horizontalInset;
+
+  @override
+  BoxPainter createBoxPainter([VoidCallback? onChanged]) {
+    return _DarazIndicatorPainter(this);
+  }
+}
+
+class _DarazIndicatorPainter extends BoxPainter {
+  _DarazIndicatorPainter(this.decoration);
+  final DarazIndicator decoration;
+
+  @override
+  void paint(Canvas canvas, Offset offset, ImageConfiguration cfg) {
+    final size = cfg.size;
+    if (size == null) return;
+
+    final p = decoration.progress.clamp(0.0, 1.0);
+
+    final leftX = offset.dx + decoration.horizontalInset;
+    final rightX = offset.dx + size.width - decoration.horizontalInset;
+    final bottomY = offset.dy + size.height;
+    final topY =
+        offset.dy + lerpDouble(8, bottomY - 4 - decoration.thickness, p)!;
+
+    // Unpinned bubble shape (with bottom notch-ish edges).
+    final notchishIndicatorPath = Path()
+      ..addRect(
+        Rect.fromPoints(Offset(-10000, bottomY - 8), Offset(10000, bottomY)),
+      )
+      ..moveTo(leftX - 20, bottomY - 8)
+      ..arcToPoint(
+        Offset(leftX - 10, bottomY - 16),
+        radius: const Radius.circular(16),
+        clockwise: false,
+      )
+      ..lineTo(leftX, topY + 8)
+      ..arcToPoint(
+        Offset(leftX + 8, topY),
+        radius: const Radius.circular(16),
+        clockwise: true,
+      )
+      ..lineTo(rightX - 8, topY)
+      ..arcToPoint(
+        Offset(rightX, topY + 8),
+        radius: const Radius.circular(16),
+        clockwise: true,
+      )
+      ..lineTo(rightX + 10, bottomY - 16)
+      ..arcToPoint(
+        Offset(rightX + 20, bottomY - 8),
+        radius: const Radius.circular(16),
+        clockwise: false,
+      );
+
+    final bubblePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 1.0 - p)
+      ..style = PaintingStyle.fill
+      ..isAntiAlias = true;
+
+    // Pinned slim underline.
+    final lineY = bottomY - 2;
+    final underlinePath = Path()
+      ..moveTo(leftX + 2, lineY)
+      ..lineTo(rightX - 2, lineY);
+
+    final underlinePaint = Paint()
+      ..color = decoration.color.withValues(alpha: p)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = lerpDouble(2.0, decoration.thickness, p)!
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..isAntiAlias = true;
+
+    canvas.drawPath(notchishIndicatorPath, bubblePaint);
+    canvas.drawPath(underlinePath, underlinePaint);
   }
 }
