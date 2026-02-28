@@ -5,7 +5,7 @@ import 'dart:math';
 import 'package:app_pigeon/app_pigeon.dart';
 import 'package:flutter/foundation.dart';
 import 'package:scroll_challenge/src/core/constants/api_endpoints.dart';
-import 'package:scroll_challenge/src/core/packages/async_handler/lib/async_handler.dart';
+import 'package:async_handler/async_handler.dart';
 
 import 'package:scroll_challenge/src/core/utils/utils.dart';
 import '../model/product/product.dart';

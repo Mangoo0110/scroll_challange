@@ -1,4 +1,4 @@
-import 'package:scroll_challenge/src/core/packages/async_handler/lib/async_handler.dart';
+import 'package:async_handler/async_handler.dart';
 
 import '../model/product/product.dart';
 import '../model/product_pagination_param.dart';

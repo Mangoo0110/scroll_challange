@@ -1,6 +1,5 @@
 
-import 'package:scroll_challenge/src/core/packages/async_handler/lib/async_handler.dart';
-
+import 'package:async_handler/async_handler.dart';
 import 'package:scroll_challenge/src/core/shared/reactive_notifier/process_notifier.dart';
 import '../../shared/reactive_notifier/snackbar_notifier.dart';
 
