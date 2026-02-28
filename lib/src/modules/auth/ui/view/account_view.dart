@@ -41,7 +41,6 @@ class _AccountViewState extends State<AccountView> {
       errorSnackbarNotifier: SnackbarNotifier(context: context),
       successSnackbarNotifier: SnackbarNotifier(context: context),
     );
-    setState(() => _isLoading = false);
   }
 
   Future<void> _openLogin() async {

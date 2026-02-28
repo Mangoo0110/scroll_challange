@@ -97,7 +97,7 @@ class _LoginViewState extends State<LoginView> {
                     },
                     onDone: () {
                       if (_loginController.loggedInUser != null && mounted) {
-                        Navigator.of(context).pop(true);
+                        
                       }
                     },
                   ),
