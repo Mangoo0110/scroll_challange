@@ -9,7 +9,7 @@ import 'package:scroll_challenge/src/app/helpers/pagination_response_converter.d
 import 'package:scroll_challenge/src/modules/category/model/category.dart';
 import 'package:scroll_challenge/src/modules/category/repo/category_repo.dart';
 
-import '../di/repo_di.dart';
+import '../../core/di/repo_di.dart';
 import '../widget/product_card/product_card.dart';
 import '../../core/utils/utils.dart';
 import '../../modules/product/model/product/product.dart';

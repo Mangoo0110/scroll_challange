@@ -2,7 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:app_pigeon/app_pigeon.dart';
 import 'package:scroll_challenge/src/modules/category/repo/mock_category_repo.dart';
 
-import '../../core/constants/api_endpoints.dart';
+import '../constants/api_endpoints.dart';
 import '../../modules/cart/controller/cart_store.dart';
 import '../../modules/cart/repo/cart_repo.dart';
 import '../../modules/cart/repo/cart_repo_impl.dart';
