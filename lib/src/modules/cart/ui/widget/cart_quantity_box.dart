@@ -49,6 +49,7 @@ class _CartQuantityBoxState extends State<CartQuantityBox> {
   }
 
   _updateUi(){
+    // Guard statement
     // If quantity has not changed; No need to update ui
     if (_currentQuantity == serviceLocator<CartStore>().quantityForVariant(
           widget.initialCartImage.cartItemId,
@@ -56,9 +57,7 @@ class _CartQuantityBoxState extends State<CartQuantityBox> {
       return;
     }
       
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
   @override
