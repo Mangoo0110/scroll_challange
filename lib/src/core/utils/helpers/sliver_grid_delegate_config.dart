@@ -3,11 +3,20 @@
 
 import 'package:flutter/material.dart';
 
-SliverGridDelegate sliverGridDelegateConfig() {
+SliverGridDelegate sliverGridDelegateConfig1() {
   return const SliverGridDelegateWithMaxCrossAxisExtent(
-    maxCrossAxisExtent: 220,
-    crossAxisSpacing: 18,
+    maxCrossAxisExtent: 250,
+    crossAxisSpacing: 2,
     mainAxisSpacing: 12,
-    childAspectRatio: 1.1,
+    childAspectRatio: .6,
+  );
+}
+
+SliverGridDelegate sliverGridDelegateConfig2() {
+  return const SliverGridDelegateWithMaxCrossAxisExtent(
+    maxCrossAxisExtent: 250,
+    crossAxisSpacing: 2,
+    mainAxisSpacing: 12,
+    childAspectRatio: .8,
   );
 }

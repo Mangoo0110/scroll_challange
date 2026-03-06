@@ -1,25 +1,63 @@
 
 
+import 'dart:math';
+
 import 'pagination_mem.dart';
 
-class InfinityScrollPaginationMem<T> extends PaginationMem<T>{
+class InfinityScrollPaginationMem<ItemUniqueKey, ItemData> extends PaginationMem<ItemUniqueKey, ItemData> {
   InfinityScrollPaginationMem({required super.perPageLimit, required super.onMemUpdate, required this.maxCapacity});
+  
   final int maxCapacity;
   int _removedFromFront = 0;
-  final List<T> _items = [];
+  final List<ItemData> _items = [];
+  final Map<ItemUniqueKey, int> _keyIndexMap = {};
   
   @override
-  void addFrontPage(List<T> items) {
-    // Base case
-    _items.insertAll(0, items);
-    // Update removed from front
-    _removedFromFront -= items.length.clamp(0, _removedFromFront); // This clamp prevents negative value assignment
+  void addFrontPage(Map<ItemUniqueKey, ItemData> items) {
+    int addedNew = 0;
+    // filter items that are already in the list using the keyIndexMap
+    for (final entry in items.entries) {
+      final key = entry.key;
+      final item = entry.value;
+      if (_keyIndexMap.containsKey(key)) {
+        // If the item is already in the list, update it
+        final index = _keyIndexMap[key]!;
+        if(!_isOutOfBound(index)) {
+          _items[index] = item;
+          continue;
+        } else {
+          // If the index is out of bound, it means the item was removed from the list. We can add it again.
+          _keyIndexMap.remove(key);
+        }
+      }
+      _items.insert(0, item);
+      addedNew++;
+    }
+
+    _removedFromFront -= min(addedNew, _removedFromFront);
     onMemUpdate();
   }
 
   @override
-  void addNextPage(List<T> items) {
-    _items.addAll(items);
+  void addNextPage(Map<ItemUniqueKey, ItemData> items) {
+    // filter items that are already in the list using the keyIndexMap
+    for (final entry in items.entries) {
+      final key = entry.key;
+      final item = entry.value;
+      if (_keyIndexMap.containsKey(key)) {
+        // If the item is already in the list, update it
+        final index = _keyIndexMap[key]!;
+        if(!_isOutOfBound(index)) {
+          _items[index] = item;
+          continue;
+        } else {
+          // If the index is out of bound, it means the item was removed from the list. We can add it again.
+          _keyIndexMap.remove(key);
+        }
+      }
+      _items.add(item);
+      _keyIndexMap[key] = _items.length - 1;
+    }
     onMemUpdate();
   }
 
@@ -35,13 +73,13 @@ class InfinityScrollPaginationMem<T> extends PaginationMem<T>{
   }
 
   @override
-  T? get first => _items.isEmpty ? null : _items.first;
+  ItemData? get first => _items.isEmpty ? null : _items.first;
 
   @override
   bool get isEmpty => _items.isEmpty;
 
   @override
-  T? itemAt(int index) {
+  ItemData? itemAt(int index) {
     if(_items.isEmpty) {
       return null;
     }
@@ -49,20 +87,19 @@ class InfinityScrollPaginationMem<T> extends PaginationMem<T>{
   }
 
   @override
-  T? get last => _items.isEmpty ? null : _items.last;
+  ItemData? get last => _items.isEmpty ? null : _items.last;
 
   @override
   int get length => _items.length;
 
   @override
-  int get nextPageToFetch => _items.length ~/ perPageLimit;
+  int get nextPageToFetch => (_items.length / perPageLimit).floor() + (_items.length % perPageLimit == 0 ? 1 : 0);
 
   @override
-  // TODO: implement previousPageToFetch
-  int get previousPageToFetch => throw UnimplementedError();
+  int get previousPageToFetch => (_removedFromFront / perPageLimit).floor() + (_removedFromFront % perPageLimit == 0 ? 1 : 0);
 
   @override
-  void updateItemAt(int index, T item) {
+  void updateItemAt(int index, ItemData item) {
     if(!_isOutOfBound(index)) {
       _items[index] = item;
     }

@@ -1,16 +1,14 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:scroll_challenge/src/core/packages/pagination_pkg/lib/src/pagination_engine.dart';
+import 'package:pagination_pkg/pagination_pkg.dart';
 import 'package:scroll_challenge/src/core/utils/utils.dart';
 
-
-class PaginatedListWidget<T> extends StatefulWidget {
-  final PaginationEngine<T> pagination;
+class PaginatedListWidget<K, T> extends StatefulWidget {
+  final PaginationEngine<K, T> pagination;
   final Axis scrollDirection;
   final Widget skeleton;
   final bool isPaginated;
+
   /// How many skeletons to show, when there is no data
   final int skeletonCount;
   final String emptyMessage;
@@ -21,35 +19,36 @@ class PaginatedListWidget<T> extends StatefulWidget {
     required this.skeleton,
     required this.skeletonCount,
     required this.builder,
-    this.emptyMessage = "No data found", 
-    required this.scrollDirection, 
-    required this.isPaginated
+    this.emptyMessage = "No data found",
+    required this.scrollDirection,
+    required this.isPaginated,
   });
 
   @override
-  State<PaginatedListWidget<T>> createState() => _PaginatedListWidgetState<T>();
+  State<PaginatedListWidget<K, T>> createState() => _PaginatedListWidgetState<K, T>();
 }
 
-class _PaginatedListWidgetState<T> extends State<PaginatedListWidget<T>> {
-    final ScrollController scrollController = ScrollController();
+class _PaginatedListWidgetState<K, T> extends State<PaginatedListWidget<K, T>> {
+  final ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    
-    if(widget.isPaginated) {
+
+    if (widget.isPaginated) {
       scrollController.addListener(() {
         // When scrolled to the bottom, load next page
-        if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+        if (scrollController.position.pixels ==
+            scrollController.position.maxScrollExtent) {
           widget.pagination.loadNextPage();
         }
 
         // When scrolled to the top, load previous page
-        if (scrollController.position.pixels == scrollController.position.minScrollExtent) {
+        if (scrollController.position.pixels ==
+            scrollController.position.minScrollExtent) {
           widget.pagination.loadPreviousPage();
         }
-
       });
     }
   }
@@ -71,7 +70,9 @@ class _PaginatedListWidgetState<T> extends State<PaginatedListWidget<T>> {
         child: ListenableBuilder(
           listenable: widget.pagination,
           builder: (context, _) {
-            debugPrint("Pagination state(UI): ${widget.pagination.state.value}");
+            debugPrint(
+              "Pagination state(UI): ${widget.pagination.state.value}",
+            );
             final state = widget.pagination.state.value;
 
             if (state == PaginationLoadState.nopages) {
@@ -115,20 +116,15 @@ class _PaginatedListWidgetState<T> extends State<PaginatedListWidget<T>> {
               scrollDirection: widget.scrollDirection,
               slivers: [
                 SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final item = widget.pagination.itemAt(index);
-                      if (item == null) {
-                        return const SizedBox.shrink();
-                      }
-                      return widget.builder(index, item);
-                    },
-                    childCount: widget.pagination.totalItemsCount,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final item = widget.pagination.itemAt(index);
+                    if (item == null) {
+                      return const SizedBox.shrink();
+                    }
+                    return widget.builder(index, item);
+                  }, childCount: widget.pagination.totalItemsCount),
                 ),
-                SliverToBoxAdapter(
-                  child: _listFooter(context, state),
-                ),
+                SliverToBoxAdapter(child: _listFooter(context, state)),
               ],
             );
           },
@@ -156,10 +152,7 @@ Widget _listFooter(BuildContext context, PaginationLoadState state) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Text(
-          "End",
-          style: TextStyle(fontStyle: FontStyle.italic).w500,
-        ),
+        child: Text("End", style: TextStyle(fontStyle: FontStyle.italic).w500),
       ),
     ).animate().fadeIn(duration: 300.ms);
   }

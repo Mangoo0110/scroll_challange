@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 
 /// Page starts from 1.
-abstract class PaginationMem<T> {
+abstract class PaginationMem<ItemUniqueKey, ItemData> {
   PaginationMem({required this.perPageLimit, required this.onMemUpdate});
 
   final int perPageLimit;
@@ -14,28 +14,28 @@ abstract class PaginationMem<T> {
   VoidCallback onMemUpdate;
 
   /// Add next page
-  void addNextPage(List<T> items);
+  void addNextPage(Map<ItemUniqueKey, ItemData> items);
 
   /// Add front page
-  void addFrontPage(List<T> items);
+  void addFrontPage(Map<ItemUniqueKey, ItemData> items);
 
   /// Delete item at index
   void deleteItemAt(int index);
 
   /// Update item at index
-  void updateItemAt(int index, T item);
+  void updateItemAt(int index, ItemData item);
 
   /// Returns total number of items
   int get length;
 
   /// Returns item at index
-  T? itemAt(int index);
+  ItemData? itemAt(int index);
 
   /// Returns last item
-  T? get last;
+  ItemData? get last;
 
   /// Returns first item
-  T? get first;
+  ItemData? get first;
 
   /// Returns true if mem is empty
   bool get isEmpty;

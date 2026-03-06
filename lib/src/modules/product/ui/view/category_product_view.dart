@@ -1,13 +1,12 @@
-
 import 'package:flutter/material.dart';
-import 'package:scroll_challenge/src/core/packages/pagination_pkg/lib/pagination_pkg.dart';
+import 'package:pagination_pkg/pagination_pkg.dart';
 import '../../../../core/shared/widget/paginated_grid.dart';
-import '../../../../core/shared/product_card/product_grid_tile.dart';
+import '../widgets/product_grid_tile.dart';
 import '../../model/product/product.dart';
 
 class CategoryProductView extends StatefulWidget {
   final String title;
-  final SinglePagePaginationController<Product> productPagination;
+  final InfinityScrollPaginationController<String, Product> productPagination;
   const CategoryProductView({
     super.key,
     required this.title,
@@ -19,7 +18,6 @@ class CategoryProductView extends StatefulWidget {
 }
 
 class _CategoryProductViewState extends State<CategoryProductView> {
-
   @override
   void initState() {
     super.initState();
@@ -28,10 +26,8 @@ class _CategoryProductViewState extends State<CategoryProductView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: PaginatedGridView<Product>(
+      appBar: AppBar(title: Text(widget.title)),
+      body: PaginatedGridView<String, Product>(
         physics: AlwaysScrollableScrollPhysics(),
         pagination: widget.productPagination,
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -60,7 +56,6 @@ class _CategoryProductViewState extends State<CategoryProductView> {
             child: ProductGridTile(product: product),
           );
         },
-        
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:app_pigeon/app_pigeon.dart';
 import 'package:scroll_challenge/src/core/constants/api_endpoints.dart';
-import 'package:scroll_challenge/src/core/packages/async_handler/lib/async_handler.dart';
+import 'package:async_handler/async_handler.dart';
 import 'package:scroll_challenge/src/core/utils/extensions/app_pigeon_response_handler.dart';
 import '../model/category.dart';
 import 'category_repo.dart';

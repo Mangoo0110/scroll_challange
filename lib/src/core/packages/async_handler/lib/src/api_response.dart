@@ -1,4 +1,4 @@
-abstract class ApiResponse<T> {
+sealed class ApiResponse<T> {
   final bool success;
   final String message;
   final T? data;
@@ -8,6 +8,11 @@ abstract class ApiResponse<T> {
 
 class SuccessResponse<T> extends ApiResponse<T> {
   SuccessResponse({super.message = "Success!", required super.data}): super(success: true);
+
+  @override
+  String toString() {
+    return '''SuccessResponse{message: $message, data: $data}''';
+  }
 }
 
 class ErrorResponse<T> extends ApiResponse<T> {
