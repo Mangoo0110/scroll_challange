@@ -4,7 +4,7 @@ import '../../core/di/repo_di.dart';
 import '../../modules/auth/ui/view/account_view.dart';
 import '../../modules/cart/controller/cart_store.dart';
 import '../../modules/cart/ui/view/cart_view.dart';
-import 'home_view.dart';
+import 'home/home_view.dart';
 
 class AppView extends StatefulWidget {
   const AppView({super.key});
